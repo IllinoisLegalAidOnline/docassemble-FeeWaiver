@@ -430,6 +430,14 @@ fields:
     show if: user_income_pension
   - "Other income": user_income_other
     datatype: yesno
+    help: |
+      Examples of other income include:
+      
+        * Financial support from family or friends,
+        * Spousal support, also called alimony,
+        * Business or rental income,
+        * Veterans benefits, or 
+        * Military allowance.      
   - "Other income source (if more than one, list all)": user_income_other_kind
     maxlength: 30
     show if: user_income_other
@@ -547,6 +555,14 @@ fields:
   - "Other": user_annual_other
     datatype: yesno
     default: ${ showifdef('user_income_other') }
+    help: |
+      Examples of other income include:
+      
+        * Financial support from family or friends,
+        * Spousal support, also called alimony,
+        * Business or rental income,
+        * Veterans benefits, or 
+        * Military allowance.      
   - "Other kind of income (if more than one, list all)": user_annual_other_kind
     maxlength: 30
     show if: user_annual_other
@@ -647,6 +663,14 @@ fields:
     show if: user_expense_child_support
   - "Other expense": user_expense_other
     datatype: yesno
+    help: |
+      Examples of other expenses include:
+      
+        * Transportation costs like gas, car repairs, or bus passes,
+        * Car insurance or other kinds of insurance,
+        * Home maintenance,
+        * Household supplies, or      
+        * School fees.
   - "Other kind of expense (if more than one, list all)": user_expense_other_line1
     maxlength: 24
     show if: user_expense_other
@@ -658,6 +682,13 @@ fields:
     show if: user_expense_other
   - "Other debt payment": user_expense_debt_other
     datatype: yesno
+    help: |
+      Examples of other debt payments include:
+      
+        * Credit card debt,
+        * Student loans,
+        * Payday loans, or
+        * Loans from family or friends.
   - "Other kind of debt (if more than one, list all)": user_expense_debt_other_line1
     maxlength: 28
     show if: user_expense_debt_other
@@ -765,6 +796,13 @@ fields:
     show if: user_asset_vehicle2
   - "Other asset": user_asset_other
     datatype: yesno
+    help: |
+      Examples of other assets include:
+      
+        * Stocks,
+        * Bonds,
+        * Jewelry, or      
+        * Collectibles.
   - "Other kind of asset (if more than one, list all)": user_asset_other_kind
     maxlength: 29
     show if: user_asset_other    
