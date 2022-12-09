@@ -185,7 +185,9 @@ question: |
 subquestion: |
   After you download your ${ form_name }, you must file it with the court. This program does not file your ${ form_name } for you.
   
-  Read the *How to Ask the Judge to Participate in a Court Case for Free or at a Reduced Cost* instructions you can download at the end of this program. 
+  **Note:** You can file your ${ form_name } at any time during your court case. It is usually done when a person files their first forms in a case. That way they might have all of the court fees in a case waived.
+  
+  Read the "How to Ask the Judge to Participate in a Court Case for Free or at a Reduced Cost" instructions you can download at the end of this program. 
 ---
 id: accept terms
 question: |
