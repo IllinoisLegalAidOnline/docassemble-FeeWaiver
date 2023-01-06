@@ -1248,12 +1248,15 @@ id: e-signature
 question: |
   Do you want to add your e-signature to your ${ form_name }?
 subquestion: |
-  If you do not add your e-signature, you must sign your paper form before you file it.
+  If you do not add your **{e-signature}**, you must sign your paper form before you file and deliver it.
 
   ${ collapse_template(signature_help) }  
 fields:
   - "Add e-signature?": e_signature
     datatype: yesnoradio
+terms:
+  - "e-signature": |
+      An e-signature is an electronic signature. It is a digital version of a signature that has the same effect as a hand-written signature. 
 ---
 template: signature_help
 subject: |
