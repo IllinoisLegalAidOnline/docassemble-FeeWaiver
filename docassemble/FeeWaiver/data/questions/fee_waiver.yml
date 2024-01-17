@@ -1404,12 +1404,30 @@ attachments:
     pdf template file: FW-CIV-Order.pdf
     editable: False
     fields:
-      - "trial_court_county": ${ trial_court.address.county.upper() }
-      - "in_re": ${ "In re:" if in_re_check == True else ""} ${ in_re_label if in_re_check == True else ""}
-      - "plaintiff": ${ plaintiffs.full_names() }
-      - "defendant": ${ defendants.full_names() }
+      - "trial_court_county": ${ trial_court.address.county }
+      - "plaintiff": |
+          % if in_re_check:
+          ${ in_re_label }
+          % else:
+          % if plaintiffs.number() > 1:
+          ${ plaintiffs[0].name.full(middle="full") }, et al.
+          % else:
+          ${ plaintiffs[0].name.full(middle="full") }
+          % endif
+          % endif
+      - "defendant": |
+          % if in_re_check:
+          ${ "" }
+          % else:
+          % if defendants.number() > 1:
+          ${ defendants[0].name.full(middle="full") }, et al.
+          % else:
+          ${ defendants[0].name.full(middle="full") }      
+          % endif
+          % endif
       - "docket_number": ${ docket_number }
       - "docket_number__1": ${ docket_number }
+      - "docket_number__2": ${ docket_number }
       - "user_name_full": ${ users[0] }
 
   - name: IL fee waiver supplement
