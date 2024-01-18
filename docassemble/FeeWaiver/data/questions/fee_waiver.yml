@@ -83,7 +83,7 @@ code: |
 
   set_progress(75)
   nav.set_section('section_about_you')
-  users[0].birth_year
+  #users[0].birth_year
   users[0].address.address
   if filing_basis == "filing_self":
     users[0].has_email_address
@@ -214,13 +214,11 @@ fields:
   - no label: user_benefits
     datatype: checkboxes
     choices:
-      - Supplemental Security Income (SSI) (Not Social Security): SSI
-      - Aid to the Aged, Blind and Disabled (AABD): AABD
-      - Temporary Assistance to Needy Families (TANF): TANF
-      - SNAP (Food Stamps): SNAP
-      - General Assistance (GA): GA
-      - Transitional Assistance: TA
-      - State Children and Family Assistance: SCFA
+      - SSI - Supplemental Security Income (not Social Security): SSI
+      - AABD - Aid to the Aged, Blind and Disabled: AABD
+      - TANF - Temporary Assistance to Needy Families: TANF
+      - SNAP - Supplemental Nutrition Assitance Program (Food Stamps): SNAP
+      - GA - General Assistance Program, Transitional Assistance, or State Children and Family Assistance: GA
     required: False
 ---
 id: Did you apply for any benefits
@@ -244,13 +242,11 @@ fields:
   - no label: user_applied_for_benefits
     datatype: checkboxes
     choices:
-      - Supplemental Security Income (SSI) (Not Social Security): SSI
-      - Aid to the Aged, Blind and Disabled (AABD): AABD
-      - Temporary Assistance to Needy Families (TANF): TANF
-      - SNAP (Food Stamps): SNAP
-      - General Assistance (GA): GA
-      - Transitional Assistance: TA
-      - State Children and Family Assistance: SCFA
+      - SSI - Supplemental Security Income (not Social Security): SSI
+      - AABD - Aid to the Aged, Blind and Disabled: AABD
+      - TANF - Temporary Assistance to Needy Families: TANF
+      - SNAP - Supplemental Nutrition Assitance Program (Food Stamps): SNAP
+      - GA - General Assistance Program, Transitional Assistance, or State Children and Family Assistance: GA
     required: False
 ---
 depends on:
@@ -1428,7 +1424,7 @@ attachments:
       - "docket_number": ${ docket_number }
       - "docket_number__1": ${ docket_number }
       - "docket_number__2": ${ docket_number }
-      - "user_name_full": ${ users[0] }
+      - "user_name_full": ${ users[0].name.full(middle="full") }
 
   - name: IL fee waiver supplement
     filename: winnebago_supplement     
@@ -1467,23 +1463,42 @@ attachments:
     pdf template file: FeeWaiver_Civil_Application.pdf
     editable: False
     fields:
-      - "trial_court_county": ${ trial_court.address.county.upper() }
-      - "in_re": ${ "In re:" if in_re_check == True else ""} ${ in_re_label if in_re_check == True else ""}
-      - "plaintiff": ${ plaintiffs.full_names() }
-      - "defendant": ${ defendants.full_names() }
+      - "trial_court_county": ${ trial_court.address.county }
+      - "plaintiff": |
+          % if in_re_check:
+          ${ in_re_label }
+          % else:
+          % if plaintiffs.number() > 1:
+          ${ plaintiffs[0].name.full(middle="full") }, et al.
+          % else:
+          ${ plaintiffs[0].name.full(middle="full") }
+          % endif
+          % endif
+      - "defendant": |
+          % if in_re_check:
+          ${ "" }
+          % else:
+          % if defendants.number() > 1:
+          ${ defendants[0].name.full(middle="full") }, et al.
+          % else:
+          ${ defendants[0].name.full(middle="full") }      
+          % endif
+          % endif
       - "docket_number": ${ docket_number }
       - "docket_number__1": ${ docket_number }
       - "docket_number__2": ${ docket_number }
+      - "docket_number__3": ${ docket_number }
+      - "filing_self_cb": ${ True if filing_basis == "filing_self" else ""}
+      - "filing_obo_cb": ${ True if filing_basis != "filing_self" else ""}
       - "user_name_full": ${ users[0].name.full(middle="full") }
+      - "user_address_one_line": ${ users[0].address.on_one_line(bare=True) }
       - "signer_name_full": |
           % if filing_basis != "filing_self":
           ${ signer[0].name.full(middle="full") }
           % else:
           ${ users[0].name.full(middle="full") }
           % endif
-      - "user_birthdate": ${ users[0].birth_year }
-      - "user_address_line_one": ${ users[0].address.line_one(bare=True) }
-      - "user_address_city_state_zip": ${ users[0].address.line_two() }
+      - "user_address_one_line__2": ${ users[0].address.on_one_line(bare=True) }
       - "signer_signature_no_slash": |
           % if filing_basis != "filing_self":          
           ${ signer[0].name.full(middle="full") if e_signature else '' }
@@ -1526,6 +1541,11 @@ attachments:
           % if user_has_dependents:
           ${ user_dependents_children }
           % endif
+      - "benefits_ssi": ${ True if user_benefits['SSI'] == True else '' }
+      - "benefits_aabd": ${ True if user_benefits['AABD'] == True else '' }
+      - "benefits_ga": ${ True if user_benefits['GA'] == True else '' }
+      - "benefits_snap": ${ True if user_benefits['SNAP'] == True else '' }
+      - "benefits_tanf": ${ True if user_benefits['TANF'] == True else '' }
       - "user_receives_benefits_yes": ${ user_benefits.any_true() }
       - "user_receives_benefits_no": ${ user_benefits.all_false() }
       - "user_pending_benefits_yes": ${ user_applied_for_benefits.any_true() }
@@ -1712,7 +1732,6 @@ attachments:
           % if filing_basis != "filing_self":
           ${ relationship_to_minor  }
           % endif
-      # - "user_consents_email_notice": ${ user_consents_email_notice }
       - "substantial_hardship_explanation": ${ substantial_hardship_explanation }
 ---
 id: IL fee waiver review screen
