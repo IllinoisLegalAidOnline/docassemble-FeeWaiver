@@ -27,6 +27,7 @@ code: |
 objects:
   - signer: ALPeopleList.using(ask_number=True,target_number=1)
   - users: ALPeopleList 
+  - user_income_other_list: DAList.using(object_type=Thing, complete_attribute='complete', there_are_any=True)
   - court_list: ALCourtLoader.using(file_name='docassemble.ILAO:data/sources/il_courts.xlsx')
 ---
 sections:
@@ -59,6 +60,8 @@ code: |
     user_has_dependents
     set_progress(25)
     user_income_none
+    if user_income_other:
+      user_income_other_list.gather()
     user_annual_none
     nav.set_section('section_expenses')
     user_expense_none
@@ -363,6 +366,8 @@ question: |
   % else:
   What income did ${ users[0].familiar() } receive in the last month?
   % endif
+subquestion: |
+  List the amount of income you received before taxes.
 fields:
   - label: |
       % if filing_basis == "filing_self":
@@ -371,64 +376,131 @@ fields:
       ${ users[0].familiar() } does not have any income
       % endif
     field: user_income_none
-    datatype: yesno
+    datatype: yesnowide
     disable others: True
-  - Money from a job or self-employment: user_income_employment
-    datatype: yesno
+  - Money from jobs or self-employment: user_income_employment
+    datatype: yesnowide
   - "Amount": user_income_employment_amount
     datatype: currency
     min: 0
     show if: user_income_employment
-  - "Unemployment benefits": user_income_unemployment
-    datatype: yesno    
-  - "Amount": user_income_unemployment_amount
-    datatype: currency
-    min: 0
-    show if: user_income_unemployment
-  - "Income from household members": user_income_household
-    datatype: yesno
-  - "Amount": user_income_household_amount
-    datatype: currency
-    min: 0
-    show if: user_income_household    
   - "Social Security (not SSI)": user_income_ss
-    datatype: yesno
+    datatype: yesnowide
   - "Amount": user_income_ss_amount
     datatype: currency
     min: 0
     show if: user_income_ss
-  - "Child support income": user_income_child_support
-    datatype: yesno
+  - "Child support": user_income_child_support
+    datatype: yesnowide
   - "Amount": user_income_child_support_amount
     datatype: currency
     min: 0
     show if: user_income_child_support
+  - "Unemployment benefits": user_income_unemployment
+    datatype: yesnowide    
+  - "Amount": user_income_unemployment_amount
+    datatype: currency
+    min: 0
+    show if: user_income_unemployment
   - "Pension": user_income_pension
-    datatype: yesno
+    datatype: yesnowide
   - "Amount": user_income_pension_amount
     datatype: currency
     min: 0
     show if: user_income_pension
-  - "Other income": user_income_other
-    datatype: yesno
+  - "Money from household members": user_income_household
+    datatype: yesnowide
+  - "Amount": user_income_household_amount
+    datatype: currency
+    min: 0
+    show if: user_income_household    
+  - "Other income not listed above (enter details on the next screen)": user_income_other
+    datatype: yesnowide
     help: |
       Examples of other income include:
       
-        * Financial support from family or friends,
+        * Money from family or friends,
         * Spousal support, also called alimony,
         * Business or rental income,
         * Veterans benefits, or 
         * Military allowance.      
-  - "Other income source (if more than one, list all)": user_income_other_kind
-    maxlength: 30
-    show if: user_income_other
-  - "Amount (if more than one, enter total)": user_income_other_amount
-    datatype: currency
-    min: 0
-    show if: user_income_other
 validation code: |
   if not (user_income_none or user_income_employment or user_income_unemployment or user_income_household or user_income_ss or user_income_child_support or user_income_pension or user_income_other):
     validation_error("Check at least one option.", field="user_income_other")
+---
+id: user other income details
+question: |
+  % if filing_basis == "filing_self":
+  What other income did you receive in the last month?
+  % else:
+  What other income did ${ users[0].familiar() } receive in the last month?
+  % endif
+subquestion: |
+  List the amount of income you received before taxes.
+fields:
+  - "Type or source of income": user_income_other_list[i].name.text
+    maxlength: 25
+  - "Amount": user_income_other_list[i].amount
+    datatype: currency
+    min: 0.01
+
+---
+id: any other monthly income
+question: |
+  Any other income in the past month?
+subquestion: |
+  The forms have space for **{certain types of income}** and up to 3 other sources of income.
+
+  So far you have told us about:
+  
+  % if user_income_employment:
+   * $${thousands(user_income_employment_amount, show_decimals=True)} from jobs or self-employment
+  % endif
+  % if user_income_ss:
+   * $${thousands(user_income_ss_amount, show_decimals=True)} from Social Security (not SSI)
+  % endif
+  % if user_income_child_support:
+   * $${thousands(user_income_child_support_amount, show_decimals=True)} from child support
+  % endif
+  % if user_income_unemployment:
+   * $${thousands(user_income_unemployment_amount, show_decimals=True)} from Unemployment
+  % endif
+  % if user_income_pension:
+   * $${thousands(user_income_pension_amount, show_decimals=True)} from pension
+  % endif
+  % if user_income_household:
+   * $${thousands(user_income_household_amount, show_decimals=True)} from other household members
+  % endif
+  % for other_income in user_income_other_list:
+   * $${thousands(other_income.amount, show_decimals=True)} from ${other_income.name.text} 
+  % endfor
+fields:
+  - "Add another source of income?": user_income_other_list.there_is_another
+    datatype: yesnoradio
+---
+terms: 
+  - "certain types of income": |
+      These income types are listed on the Fee waiver application:
+      
+       * Employment
+       * Social Security (not SSI)
+       * Child support
+       * Unemployment
+       * Pension
+       * Money from other household members
+---
+code: |
+  user_income_other_list[i].name.text
+  user_income_other_list[i].amount
+  user_income_other_list[i].complete = True
+---
+code: |
+  if user_income_other_list.number_gathered() >= 3:
+    user_income_other_list.there_is_another = False
+
+
+
+
 ---
 code: |
   def sum_if_defined(*pargs):
@@ -438,7 +510,9 @@ code: |
         total += value(source)
     return total        
   
-  user_income_total = sum_if_defined('user_income_other_amount', 
+  user_income_total = sum_if_defined('user_income_other_list[0].amount', 
+      'user_income_other_list[1].amount',
+      'user_income_other_list[2].amount',
       'user_income_household_amount',
       'user_income_ss_amount',
       'user_income_employment_amount',
@@ -459,7 +533,8 @@ subquestion: |
   any corrections that you need.
   
   Write the actual amount received **over the last 12 months** for each kind
-  of income.
+  of income. List the amount of income you received before taxes.
+
 fields:
   - label: |
       % if filing_basis == "filing_self":
@@ -468,10 +543,10 @@ fields:
       ${ users[0].familiar() } did not have any income over the last 12 months
       % endif
     field: user_annual_none
-    datatype: yesno
+    datatype: yesnowide
     disable others: True
-  - Money from a job or self-employment: user_annual_employment
-    datatype: yesno
+  - Money from jobs or self-employment: user_annual_employment
+    datatype: yesnowide
     default: ${ showifdef('user_income_employment') }
   - "Amount": user_annual_employment_amount
     datatype: currency
@@ -482,7 +557,7 @@ fields:
       % endif
     show if: user_annual_employment
   - "Unemployment benefits": user_annual_unemployment
-    datatype: yesno
+    datatype: yesnowide
     default: ${ showifdef('user_income_unemployment') }
   - "Amount": user_annual_unemployment_amount
     datatype: currency
@@ -493,7 +568,7 @@ fields:
       % endif
     show if: user_annual_unemployment
   - "Household members": user_annual_household
-    datatype: yesno
+    datatype: yesnowide
     default: ${ showifdef('user_income_household') }
   - "Amount": user_annual_household_amount
     datatype: currency
@@ -504,7 +579,7 @@ fields:
       ${ user_income_household_amount * 12 }
       % endif    
   - "Social Security": user_annual_ss
-    datatype: yesno
+    datatype: yesnowide
     default: ${ showifdef('user_income_ss') }
   - "Amount": user_annual_ss_amount
     datatype: currency
@@ -515,7 +590,7 @@ fields:
       % endif
     show if: user_annual_ss      
   - "Child support": user_annual_child_support
-    datatype: yesno
+    datatype: yesnowide
     default: ${ showifdef('user_income_child_support') }
   - "Amount": user_annual_child_support_amount
     datatype: currency
@@ -526,7 +601,7 @@ fields:
       ${ user_income_child_support_amount * 12 }
       % endif
   - "Pension": user_annual_pension
-    datatype: yesno
+    datatype: yesnowide
     default: ${ showifdef('user_income_pension') }
   - "Amount": user_annual_pension_amount
     datatype: currency
@@ -536,30 +611,30 @@ fields:
       ${ user_income_pension_amount * 12 }
       % endif
     show if: user_annual_pension
-  - "Other": user_annual_other
-    datatype: yesno
+  - "Other income not listed above (enter details on the next screen)": user_annual_other
+    datatype: yesnowide
     default: ${ showifdef('user_income_other') }
     help: |
       Examples of other income include:
       
-        * Financial support from family or friends,
+        * Money from family or friends,
         * Spousal support, also called alimony,
         * Business or rental income,
         * Veterans benefits, or 
         * Military allowance.      
-  - "Other kind of income (if more than one, list all)": user_annual_other_kind
-    maxlength: 30
-    show if: user_annual_other
-    default: |
-      ${ showifdef('user_income_other_kind') }    
-  - "Amount (if more than one, enter total)": user_annual_other_amount
-    datatype: currency
-    min: 0
-    show if: user_annual_other
-    default: |
-      % if defined('user_income_other_amount'):
-      ${ user_income_other_amount * 12 }
-      % endif
+#  - "Other kind of income (if more than one, list all)": user_annual_other_kind
+#    maxlength: 30
+#    show if: user_annual_other
+#    default: |
+#      ${ showifdef('user_income_other_kind') }    
+#  - "Amount (if more than one, enter total)": user_annual_other_amount
+#    datatype: currency
+#    min: 0
+#    show if: user_annual_other
+#    default: |
+#      % if defined('user_income_other_amount'):
+#      ${ user_income_other_amount * 12 }
+#      % endif
 validation code: |
   if not (user_annual_none or user_annual_employment or user_annual_unemployment or user_annual_household or user_annual_ss or user_annual_child_support or user_annual_pension or user_annual_other):
     validation_error("Check at least one option.", field="user_annual_other")
@@ -569,10 +644,10 @@ code: |
       'user_annual_child_support_amount',
       'user_annual_employment_amount',
       'user_annual_household_amount',
-      'user_annual_other_amount',
       'user_annual_pension_amount',
       'user_annual_ss_amount',
-      'user_annual_unemployment_amount',
+      'user_annual_unemployment_amount'
+      #'user_annual_other_amount',
   )
 ---
 id: What expenses do you have right now
@@ -592,64 +667,64 @@ fields:
       ${ users[0].familiar() } does not have any expenses
       % endif
     field: user_expense_none
-    datatype: yesno
+    datatype: yesnowide
     disable others: True
   - "Rent": user_expense_rent
-    datatype: yesno    
+    datatype: yesnowide    
   - "Amount": user_expense_rent_amount
     datatype: currency
     min: 0
     show if: user_expense_rent
   - "Mortgage for home": user_expense_mortgage
-    datatype: yesno
+    datatype: yesnowide
   - "Amount": user_expense_mortgage_amount
     datatype: currency
     min: 0
     show if: user_expense_mortgage
   - "Other mortgage": user_expense_other_mortgage
-    datatype: yesno
+    datatype: yesnowide
   - "Amount": user_expense_other_mortgage_amount
     datatype: currency
     min: 0
     show if: user_expense_other_mortgage
   - "Utilities": user_expense_utilities
-    datatype: yesno
+    datatype: yesnowide
   - "Amount": user_expense_utilities_amount
     datatype: currency
     min: 0
     show if: user_expense_utilities
   - "Food": user_expense_food
-    datatype: yesno
+    datatype: yesnowide
   - "Amount": user_expense_food_amount
     datatype: currency
     min: 0
     show if: user_expense_food
   - "Medical expenses": user_expense_medical
-    datatype: yesno
+    datatype: yesnowide
   - "Amount": user_expense_medical_amount
     datatype: currency
     min: 0
     show if: user_expense_medical
   - "Car loan": user_expense_car
-    datatype: yesno
+    datatype: yesnowide
   - "Amount": user_expense_car_amount
     datatype: currency
     min: 0
     show if: user_expense_car
   - "Childcare": user_expense_childcare
-    datatype: yesno
+    datatype: yesnowide
   - "Amount": user_expense_childcare_amount
     datatype: currency
     min: 0
     show if: user_expense_childcare
   - "Child support": user_expense_child_support
-    datatype: yesno
+    datatype: yesnowide
   - "Amount": user_expense_child_support_amount
     datatype: currency
     min: 0
     show if: user_expense_child_support
   - "Other expense": user_expense_other
-    datatype: yesno
+    datatype: yesnowide
     help: |
       Examples of other expenses include:
       
@@ -658,33 +733,33 @@ fields:
         * Home maintenance,
         * Household supplies, or      
         * School fees.
-  - "Other kind of expense (if more than one, list all)": user_expense_other_line1
-    maxlength: 24
-    show if: user_expense_other
+  #- "Other kind of expense (if more than one, list all)": user_expense_other_line1
+  #  maxlength: 24
+  #  show if: user_expense_other
   #- "Kind (continued)": user_expense_other_line2
   #  maxlength: 53    
-  - "Amount (if more than one, enter total)": user_expense_other_amount
-    datatype: currency
-    min: 0
-    show if: user_expense_other
-  - "Other debt payment": user_expense_debt_other
-    datatype: yesno
-    help: |
-      Examples of other debt payments include:
-      
-        * Credit card debt,
-        * Student loans,
-        * Payday loans, or
-        * Loans from family or friends.
-  - "Other kind of debt (if more than one, list all)": user_expense_debt_other_line1
-    maxlength: 28
-    show if: user_expense_debt_other
+  #- "Amount (if more than one, enter total)": user_expense_other_amount
+  #  datatype: currency
+  #  min: 0
+  #  show if: user_expense_other
+  #- "Other debt payment": user_expense_debt_other
+  #  datatype: yesno
+  #  help: |
+  #    Examples of other debt payments include:
+  #    
+  #      * Credit card debt,
+  #      * Student loans,
+  #      * Payday loans, or
+  #      * Loans from family or friends.
+  #- "Other kind of debt (if more than one, list all)": user_expense_debt_other_line1
+  #  maxlength: 28
+  #  show if: user_expense_debt_other
   #- "Kind (continued)": user_expense_debt_other_line2
   #  maxlength: 53
-  - "Amount (if more than one, enter total)": user_expense_debt_other_amount
-    datatype: currency
-    min: 0
-    show if: user_expense_debt_other
+  #- "Amount (if more than one, enter total)": user_expense_debt_other_amount
+  #  datatype: currency
+  #  min: 0
+  #  show if: user_expense_debt_other
 validation code: |
   if not (user_expense_none or user_expense_rent or user_expense_mortgage or user_expense_other_mortgage or user_expense_utilities or user_expense_food or user_expense_medical or user_expense_car or user_expense_childcare or user_expense_child_support or user_expense_other or user_expense_debt_other):
     validation_error("Check at least one option.", field="user_expense_debt_other")
@@ -737,16 +812,16 @@ subquestion: |
   % endif
 fields:
   - "No assets": user_asset_none
-    datatype: yesno
+    datatype: yesnowide
     disable others: True
   - "Bank account or cash": user_asset_bank_account
-    datatype: yesno
+    datatype: yesnowide
   - "Amount": user_asset_bank_account_amount
     datatype: currency
     min: 0
     show if: user_asset_bank_account
   - "House ${ i_or_they } live in": user_asset_home
-    datatype: yesno
+    datatype: yesnowide
   - "Value": user_asset_home_amount
     datatype: currency
     min: 0
@@ -756,7 +831,7 @@ fields:
     min: 0
     show if: user_asset_home
   - "Other real estate": user_asset_other_real_estate
-    datatype: yesno
+    datatype: yesnowide
   - "Value": user_asset_other_real_estate_amount
     datatype: currency
     min: 0
@@ -766,7 +841,7 @@ fields:
     min: 0
     show if: user_asset_other_real_estate
   - "Vehicle": user_asset_vehicle1
-    datatype: yesno
+    datatype: yesnowide
   - "Vehicle is paid in full": user_asset_vehicle1_paid
     datatype: yesno
     show if: user_asset_vehicle1
@@ -777,7 +852,7 @@ fields:
   - "Second vehicle": user_asset_vehicle2
     datatype: yesno
     show if: user_asset_vehicle1
-  - "Vehicle is paid in full": user_asset_vehicle2_paid
+  - "Second vehicle is paid in full": user_asset_vehicle2_paid
     datatype: yesno
     show if: user_asset_vehicle2    
   - "Value": user_asset_vehicle2_amount
@@ -785,7 +860,7 @@ fields:
     min: 0
     show if: user_asset_vehicle2
   - "Other asset": user_asset_other
-    datatype: yesno
+    datatype: yesnowide
     help: |
       Examples of other assets include:
       
@@ -1668,13 +1743,13 @@ attachments:
           ${ user_annual_other }
           % endif
       - "user_annual_other_amount": |
-          % if not user_annual_none:
-          ${ thousands(user_annual_other_amount, show_decimals=True) }
-          % endif
+          #% if not user_annual_none:
+          #${ thousands(user_annual_other_amount, show_decimals=True) }
+          #% endif
       - "user_annual_other_kind": |
-          % if not user_annual_none:
-          ${ user_annual_other_kind }
-          % endif
+          #% if not user_annual_none:
+          #${ user_annual_other_kind }
+          #% endif
       - "user_annual_none": ${ user_annual_none }
       - "user_annual_total": |
           % if not user_annual_none:
@@ -1877,14 +1952,14 @@ review:
     button: |
       **Annual other income**:
       ${ word(yesno(user_annual_other)) }
-  - Edit: user_annual_other_amount
-    button: |
-      **Other income amount (last year)**:
-      ${ currency(user_annual_other_amount) }
-  - Edit: user_annual_other_kind
-    button: |
-      **Other kinds of income**:
-      ${ user_annual_other_kind }
+  #- Edit: user_annual_other_amount
+  #  button: |
+  #    **Other income amount (last year)**:
+  #    ${ currency(user_annual_other_amount) }
+  #- Edit: user_annual_other_kind
+  #  button: |
+  #    **Other kinds of income**:
+  #    ${ user_annual_other_kind }
   - Edit: user_annual_none
     button: |
       **No income (last year)**:
@@ -2418,14 +2493,14 @@ review:
     button: |
       **Annual other income**:
       ${ word(yesno(user_annual_other)) }
-  - Edit: user_annual_other_amount
-    button: |
-      **Other income amount (last year)**:
-      ${ currency(user_annual_other_amount) }
-  - Edit: user_annual_other_kind
-    button: |
-      **Other kinds of income**:
-      ${ user_annual_other_kind }
+  #- Edit: user_annual_other_amount
+  #  button: |
+  #    **Other income amount (last year)**:
+  #    ${ currency(user_annual_other_amount) }
+  #- Edit: user_annual_other_kind
+  #  button: |
+  #    **Other kinds of income**:
+  #    ${ user_annual_other_kind }
   - Edit: user_annual_none
     button: |
       **No income (last year)**:
