@@ -792,7 +792,7 @@ fields:
     datatype: currency
     min: 0
     show if: user_expense_child_support
-  - "Other monthly expenses not listed above": user_expense_other
+  - "Other monthly expenses or loans not listed above": user_expense_other
     datatype: yesnowide
     help: |
       Examples of other expenses include:
@@ -802,57 +802,118 @@ fields:
         * Home maintenance,
         * Household supplies, or      
         * School fees.
-      Examples of other debt payments include:
+        
+      Examples of debt or loan payments include:
       
         * Credit card debt,
         * Student loans,
         * Payday loans, or
         * Loans from family or friends.
-        
-  #- "Other kind of expense (if more than one, list all)": user_expense_other_line1
-  #  maxlength: 24
-  #  show if: user_expense_other
-  #- "Kind (continued)": user_expense_other_line2
-  #  maxlength: 53    
-  #- "Amount (if more than one, enter total)": user_expense_other_amount
-  #  datatype: currency
-  #  min: 0
-  #  show if: user_expense_other
-  #- "Other debt payment": user_expense_debt_other
-  #  datatype: yesno
-  #  help: |
-  #    Examples of other debt payments include:
-  #    
-  #      * Credit card debt,
-  #      * Student loans,
-  #      * Payday loans, or
-  #      * Loans from family or friends.
-  #- "Other kind of debt (if more than one, list all)": user_expense_debt_other_line1
-  #  maxlength: 28
-  #  show if: user_expense_debt_other
-  #- "Kind (continued)": user_expense_debt_other_line2
-  #  maxlength: 53
-  #- "Amount (if more than one, enter total)": user_expense_debt_other_amount
-  #  datatype: currency
-  #  min: 0
-  #  show if: user_expense_debt_other
 validation code: |
-  if not (user_expense_none or user_expense_rent or user_expense_mortgage or user_expense_other_mortgage or user_expense_utilities or user_expense_food or user_expense_medical or user_expense_car or user_expense_childcare or user_expense_child_support or user_expense_other or user_expense_debt_other):
+  if not (user_expense_none or user_expense_rent or user_expense_mortgage or user_expense_other_mortgage or user_expense_utilities or user_expense_food or user_expense_medical or user_expense_car or user_expense_childcare or user_expense_child_support or user_expense_other):
     validation_error("Check at least one option.", field="user_expense_debt_other")
+---
+id: user other expenses details
+question: |
+  % if filing_basis == "filing_self":
+  What other monthly expenses do you have right now?
+  % else:
+  What other monthly expenses does ${ users[0].familiar() } have right now?
+  % endif
+subquestion: |
+  Write the amount that costs **per month**.
+  
+  % if filing_basis == "filing_self":
+  If you share expenses with someone, list only the amount you pay.
+  % else:
+  If ${ users[0].familiar() } shares expenses with someone, list only the amount that ${ users[0].familiar() } pays.
+  % endif
+fields:
+  - "Other monthly expense": user_expense_other_list[i].name.text
+    maxlength: 25
+  - "Amount": user_expense_other_list[i].amount
+    datatype: currency
+    min: 0.01
+---
+id: any other expenses
+question: |
+  Any other monthly expenses?
+subquestion: |
+  The forms have space for **{certain types of expenses}** and up to 3 other monthly expenses.
+
+  So far you have told us about:
+  
+  % if user_expense_rent:
+   * $${thousands(user_expense_rent_amount, show_decimals=True)} for rent
+  % endif
+  % if user_expense_mortgage:
+   * $${thousands(user_expense_mortgage_amount, show_decimals=True)} for a home mortgage
+  % endif
+  % if user_expense_other_mortgage:
+   * $${thousands(user_expense_other_mortgage_amount, show_decimals=True)} for another mortgage
+  % endif
+  % if user_expense_utilities:
+   * $${thousands(user_expense_utilities_amount, show_decimals=True)} for utilities
+  % endif
+  % if user_expense_food:
+   * $${thousands(user_expense_food_amount, show_decimals=True)} for food
+  % endif
+  % if user_expense_medical:
+   * $${thousands(user_expense_medical_amount, show_decimals=True)} for medical expenses
+  % endif
+  % if user_expense_car:
+   * $${thousands(user_expense_car_amount, show_decimals=True)} for vehicles, including loans
+  % endif
+  % if user_expense_childcare:
+   * $${thousands(user_expense_childcare_amount, show_decimals=True)} for childcare
+  % endif
+  % if user_expense_child_support:
+   * $${thousands(user_expense_child_support_amount, show_decimals=True)} for child support
+  % endif
+  % for other_expense in user_expense_other_list:
+   * $${thousands(other_expense.amount, show_decimals=True)} for ${other_expense.name.text} 
+  % endfor
+fields:
+  - "Add another expense?": user_expense_other_list.there_is_another
+    datatype: yesnoradio
+---
+terms: 
+  - "certain types of expenses": |
+      These expenses are listed on the Fee waiver application:
+      
+       * Rent
+       * Home mortgage
+       * Other mortgage
+       * Utilities
+       * Food
+       * Medical
+       * Vehicle, including any loans
+       * Childcare
+       * Child support
+---
+code: |
+  user_expense_other_list[i].name.text
+  user_expense_other_list[i].amount
+  user_expense_other_list[i].complete = True
+---
+code: |
+  if user_expense_other_list.number_gathered() >= 3:
+    user_expense_other_list.there_is_another = False
 ---
 code: |
   user_expense_total = sum_if_defined(
       'user_expense_car_amount',
       'user_expense_child_support_amount',
       'user_expense_childcare_amount',
-      'user_expense_debt_other_amount',
       'user_expense_food_amount',
       'user_expense_medical_amount',
       'user_expense_mortgage_amount',
       'user_expense_other_mortgage_amount',
-      'user_expense_other_amount',
       'user_expense_rent_amount',
       'user_expense_utilities_amount',
+      'user_expense_other_list[0].amount',
+      'user_expense_other_list[1].amount',
+      'user_expense_other_list[2].amount'
     )
 ---
 depends on: filing_basis
@@ -1882,13 +1943,30 @@ attachments:
       - "user_expense_child_support": ${ user_expense_child_support }
       - "user_expense_child_support_amount": ${ thousands(user_expense_child_support_amount, show_decimals=True) }
       - "user_expense_other": ${ user_expense_other }
-      - "user_expense_other_line1": ${ user_expense_other_line1 }
-      - "user_expense_other_amount": ${ thousands(user_expense_other_amount, show_decimals=True) }
-      # - "user_expense_other_line2": ${ user_expense_other_line2 }
-      - "user_expense_debt_other": ${ user_expense_debt_other }
-      - "user_expense_debt_other_line1": ${ user_expense_debt_other_line1 }
-      #- "user_expense_debt_other_line2": ${ user_expense_debt_other_line2 }
-      - "user_expense_debt_other_amount": ${ thousands(user_expense_debt_other_amount, show_decimals=True) }
+      - "user_expense_other_amount_1":  |
+          % if not user_expense_none:
+          ${ thousands(user_expense_other_list[0].amount, show_decimals=True) }
+          % endif
+      - "user_expense_other_kind_1":  |
+          % if not user_expense_none:
+          ${ user_expense_other_list[0].name.text }
+          % endif
+      - "user_expense_other_amount_2":  |
+          % if not user_expense_none:
+          ${ thousands(user_expense_other_list[1].amount, show_decimals=True) }
+          % endif
+      - "user_expense_other_kind_2":  |
+          % if not user_expense_none:
+          ${ user_expense_other_list[1].name.text }
+          % endif
+      - "user_expense_other_amount_3":  |
+          % if not user_expense_none:
+          ${ thousands(user_expense_other_list[2].amount, show_decimals=True) }
+          % endif
+      - "user_expense_other_kind_3":  |
+          % if not user_expense_none:
+          ${ user_expense_other_list[2].name.text }
+          % endif
       - "user_expense_none": ${ user_expense_none }
       - "user_expense_total": ${ thousands(user_expense_total, show_decimals=True) }
       - "user_asset_bank_account": ${ user_asset_bank_account }
