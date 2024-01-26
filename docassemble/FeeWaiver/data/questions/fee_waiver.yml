@@ -30,6 +30,7 @@ objects:
   - user_income_other_list: DAList.using(object_type=Thing, complete_attribute='complete', there_are_any=True)
   - user_annual_other_list: DAList.using(object_type=Thing, complete_attribute='complete', there_are_any=True)
   - user_expense_other_list: DAList.using(object_type=Thing, complete_attribute='complete', there_are_any=True)
+  - user_asset_other_list: DAList.using(object_type=Thing, complete_attribute='complete', there_are_any=True)
   - court_list: ALCourtLoader.using(file_name='docassemble.ILAO:data/sources/il_courts.xlsx')
 ---
 sections:
@@ -74,6 +75,8 @@ code: |
     set_progress(35)
     nav.set_section('section_assets')
     ask_user_assets
+    if user_asset_other:
+      user_asset_other_list.gather()
     if not poverty_scale_get_income_limit(household_size=household_size, multiplier=1.25) is None:
       show_qualification_guess
   substantial_hardship_explanation
@@ -504,6 +507,16 @@ code: |
   if user_income_other_list.number_gathered() >= 3:
     user_income_other_list.there_is_another = False
 ---
+depends on:
+  - user_income_other_list[0].amount
+  - user_income_other_list[1].amount
+  - user_income_other_list[2].amount
+  - user_income_household_amount
+  - user_income_ss_amount
+  - user_income_employment_amount
+  - user_income_child_support_amount
+  - user_income_unemployment_amount'
+  - user_income_pension_amount 
 code: |
   def sum_if_defined(*pargs):
     total = 0
@@ -700,6 +713,16 @@ code: |
   if user_annual_other_list.number_gathered() >= 3:
     user_annual_other_list.there_is_another = False
 ---
+depends on:
+  - user_annual_other_list[0].amount
+  - user_annual_other_list[1].amount
+  - user_annual_other_list[2].amount
+  - user_annual_household_amount
+  - user_annual_ss_amount
+  - user_annual_employment_amount
+  - user_annual_child_support_amount
+  - user_annual_unemployment_amount'
+  - user_annual_pension_amount 
 code: |
   user_annual_total = sum_if_defined(
       'user_annual_child_support_amount',
@@ -721,7 +744,7 @@ question: |
   What expenses does ${ users[0].familiar() } have right now?
   % endif
 subquestion: |
-  Write the amount that each expenses costs **per month**.
+  Enter the amount that each expense costs **per month**.
   
   % if filing_basis == "filing_self":
   If you share expenses with someone, list only the amount you pay.
@@ -821,7 +844,7 @@ question: |
   What other monthly expenses does ${ users[0].familiar() } have right now?
   % endif
 subquestion: |
-  Write the amount that costs **per month**.
+  Enter the expense and the amount that it costs **per month**.
   
   % if filing_basis == "filing_self":
   If you share expenses with someone, list only the amount you pay.
@@ -900,6 +923,19 @@ code: |
   if user_expense_other_list.number_gathered() >= 3:
     user_expense_other_list.there_is_another = False
 ---
+depends on:
+  - user_expense_car_amount
+  - user_expense_child_support_amount
+  - user_expense_childcare_amount
+  - user_expense_food_amount
+  - user_expense_medical_amount
+  - user_expense_mortgage_amount
+  - user_expense_other_mortgage_amount
+  - user_expense_rent_amount
+  - user_expense_utilities_amount
+  - user_expense_other_list[0].amount
+  - user_expense_other_list[1].amount
+  - user_expense_other_list[2].amount
 code: |
   user_expense_total = sum_if_defined(
       'user_expense_car_amount',
@@ -957,7 +993,7 @@ fields:
     datatype: currency
     min: 0
     show if: user_asset_bank_account
-  - "House ${ i_or_they } live in": user_asset_home
+  - "Home ${ i_or_they } live in": user_asset_home
     datatype: yesnowide
   - "Value": user_asset_home_amount
     datatype: currency
@@ -973,13 +1009,9 @@ fields:
     datatype: currency
     min: 0
     show if: user_asset_other_real_estate
-  - "Amount owed on mortgage": user_asset_other_real_estate_amount_owed
-    datatype: currency
-    min: 0
-    show if: user_asset_other_real_estate
   - "Vehicle": user_asset_vehicle1
     datatype: yesnowide
-  - "Vehicle is paid in full": user_asset_vehicle1_paid
+  - "Vehicle is paid in full.": user_asset_vehicle1_paid
     datatype: yesno
     show if: user_asset_vehicle1
   - "Value": user_asset_vehicle1_amount
@@ -989,14 +1021,14 @@ fields:
   - "Second vehicle": user_asset_vehicle2
     datatype: yesno
     show if: user_asset_vehicle1
-  - "Second vehicle is paid in full": user_asset_vehicle2_paid
+  - "Second vehicle is paid in full.": user_asset_vehicle2_paid
     datatype: yesno
     show if: user_asset_vehicle2    
-  - "Value": user_asset_vehicle2_amount
+  - "Value of second vehicle": user_asset_vehicle2_amount
     datatype: currency
     min: 0
     show if: user_asset_vehicle2
-  - "Other asset": user_asset_other
+  - "Other assets not listed above": user_asset_other
     datatype: yesnowide
     help: |
       Examples of other assets include:
@@ -1005,17 +1037,85 @@ fields:
         * Bonds,
         * Jewelry, or      
         * Collectibles.
-  - "Other kind of asset (if more than one, list all)": user_asset_other_kind
-    maxlength: 29
-    show if: user_asset_other    
-  - "Amount (if more than one, enter total)": user_asset_other_amount
-    datatype: currency
-    min: 0
-    show if: user_asset_other 
 validation code: |
   if not (user_asset_none or user_asset_bank_account or user_asset_home or user_asset_other_real_estate or user_asset_vehicle1 or user_asset_other):
     validation_error("Check at least one option.", field="user_asset_other")
 ---
+id: user other assets details
+question: |
+  % if filing_basis == "filing_self":
+  What other asset you have?
+  % else:
+  What other asset does ${ users[0].familiar() } have?
+  % endif
+subquestion: |
+  Enter the item and its value.
+fields:
+  - "Other asset": user_asset_other_list[i].name.text
+    maxlength: 25
+  - "Value": user_asset_other_list[i].amount
+    datatype: currency
+    min: 0.01
+
+---
+id: any other assets
+question: |
+  Any other assets?
+subquestion: |
+  The forms have space for **{certain types of assets}** and up to 3 other assets.
+
+  So far you have told us about these assets:
+  
+  % if user_asset_bank_account:
+   * Bank accounts or cash worth $${thousands(user_asset_bank_account_amount, show_decimals=True)}
+  % endif
+  % if user_asset_home:
+   * A home ${you_or_they} live in worth $${thousands(user_asset_home_amount, show_decimals=True)}
+  % endif
+  % if user_asset_other_real_estate:
+   * Other real estate (not including the home ${you_or_they} live in) worth $${thousands(user_asset_other_real_estate_amount, show_decimals=True)}
+  % endif
+  % if user_asset_vehicle1:
+   * A vehicle worth $${thousands(user_asset_vehicle1_amount, show_decimals=True)}
+  % endif
+  % if user_asset_vehicle2:
+   * A second vehicle worth $${thousands(user_asset_vehicle2_amount, show_decimals=True)}
+  % endif
+  % for other_asset in user_asset_other_list:
+   * ${other_asset.name.text} worth $${thousands(other_asset.amount, show_decimals=True)}
+  % endfor
+fields:
+  - "Add another asset?": user_asset_other_list.there_is_another
+    datatype: yesnoradio
+---
+terms: 
+  - "certain types of assets": |
+      These assets are listed on the Fee waiver application:
+      
+       * Money in bank accounts or cash
+       * A home
+       * Other real estate
+       * Vehicles
+
+---
+code: |
+  user_asset_other_list[i].name.text
+  user_asset_other_list[i].amount
+  user_asset_other_list[i].complete = True
+---
+code: |
+  if user_asset_other_list.number_gathered() >= 3:
+    user_asset_other_list.there_is_another = False
+
+---
+# not used in 2024 forms
+depends on:
+  - user_asset_bank_account_amount
+  - user_asset_home_amount
+  - user_asset_other_real_estate_amount
+  - user_asset_vehicle1_amount
+  - user_asset_vehicle2_amount
+  - user_asset_other_amount
 code: |
   user_asset_total = (sum_if_defined(
     'user_asset_bank_account_amount'
@@ -1023,11 +1123,12 @@ code: |
     'user_asset_other_real_estate_amount'
     'user_asset_vehicle1_amount',
     'user_asset_vehicle2_amount',
-    'user_asset_other_amount',
-    ) - 
-    sum_if_defined('user_asset_other_real_estate_amount_owed',
-      'user_asset_home_amount_owed')
-  )
+    'user_asset_other_amount'
+  ))
+  #  ) - 
+  #  sum_if_defined('user_asset_other_real_estate_amount_owed',
+  #    'user_asset_home_amount_owed')
+  #)
     
   # 'user_asset_vehicle1_paid',
   # 'user_asset_vehicle2_paid', 
@@ -1159,11 +1260,11 @@ fields:
     show if: 
       variable: filing_basis
       is: filing_on_behalf_of
-  - How are you related to the person you are filing for?: relationship_to_minor
-    maxlength: 33
-    show if: 
-      variable: filing_basis
-      is: filing_on_behalf_of
+  #- How are you related to the person you are filing for?: relationship_to_minor
+  #  maxlength: 33
+  #  show if: 
+  #    variable: filing_basis
+  #    is: filing_on_behalf_of
 ---
 id: birth year
 question: |
@@ -1976,7 +2077,6 @@ attachments:
       - "user_asset_home_amount_owed": ${ thousands(user_asset_home_amount_owed, show_decimals=True) }
       - "user_asset_other_real_estate": ${ user_asset_other_real_estate }
       - "user_asset_other_real_estate_amount": ${ thousands(user_asset_other_real_estate_amount, show_decimals=True) }
-      - "user_asset_other_real_estate_amount_owed": ${ thousands(user_asset_other_real_estate_amount_owed, show_decimals=True) }
       - "user_asset_vehicle1": ${ user_asset_vehicle1 }
       - "user_asset_vehicle1_paid_yes": ${ user_asset_vehicle1_paid }
       - "user_asset_vehicle1_paid_no": ${ not user_asset_vehicle1_paid }
@@ -1987,13 +2087,35 @@ attachments:
       - "user_asset_vehicle2_amount": ${ thousands(user_asset_vehicle2_amount, show_decimals=True) if user_asset_vehicle2 else '' }
       - "user_asset_other_amount": ${ thousands(user_asset_other_amount, show_decimals=True) }
       - "user_asset_other": ${ user_asset_other }
-      - "user_asset_other_kind": ${ user_asset_other_kind }
-      - "user_asset_none": ${ user_asset_none }
-      - "relationship_to_minor": |
-          % if filing_basis != "filing_self":
-          ${ relationship_to_minor  }
+      - "user_asset_other_amount_1":  |
+          % if not user_asset_none:
+          ${ thousands(user_asset_other_list[0].amount, show_decimals=True) }
+          % endif
+      - "user_asset_other_kind_1":  |
+          % if not user_asset_none:
+          ${ user_asset_other_list[0].name.text }
+          % endif
+      - "user_asset_other_amount_2":  |
+          % if not user_asset_none:
+          ${ thousands(user_asset_other_list[1].amount, show_decimals=True) }
+          % endif
+      - "user_asset_other_kind_2":  |
+          % if not user_asset_none:
+          ${ user_asset_other_list[1].name.text }
+          % endif
+      - "user_asset_other_amount_3":  |
+          % if not user_asset_none:
+          ${ thousands(user_asset_other_list[2].amount, show_decimals=True) }
+          % endif
+      - "user_asset_other_kind_3":  |
+          % if not user_asset_none:
+          ${ user_asset_other_list[2].name.text }
           % endif
       - "substantial_hardship_explanation": ${ substantial_hardship_explanation }
+      #- "relationship_to_minor": |
+      #    % if filing_basis != "filing_self":
+      #    ${ relationship_to_minor  }
+      #    % endif
 ---
 id: IL fee waiver review screen
 event: review_IL_fee_waiver
@@ -2270,11 +2392,11 @@ review:
       ${ currency(user_asset_bank_account_amount) }
   - Edit: user_asset_home
     button: |
-      **House**:
+      **Home**:
       ${ word(yesno(user_asset_home)) }
   - Edit: user_asset_home_amount
     button: |
-      **House value**:
+      **Home value**:
       ${ currency(user_asset_home_amount) }
   - Edit: user_asset_home_amount_owed
     button: |
@@ -2829,11 +2951,11 @@ review:
       ${ currency(user_asset_bank_account_amount) }
   - Edit: user_asset_home
     button: |
-      **House**:
+      **Home**:
       ${ word(yesno(user_asset_home)) }
   - Edit: user_asset_home_amount
     button: |
-      **House value**:
+      **Home value**:
       ${ currency(user_asset_home_amount) }
   - Edit: user_asset_home_amount_owed
     button: |
