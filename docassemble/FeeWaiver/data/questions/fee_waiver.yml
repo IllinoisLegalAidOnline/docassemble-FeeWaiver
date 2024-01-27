@@ -53,6 +53,7 @@ code: |
   accept_terms
   whats_next
   set_progress(10)
+  civil_fee_waiver
   filing_basis
 
   nav.set_section('section_income')
@@ -105,6 +106,8 @@ code: |
 
   set_progress(90)
   e_signature
+  bring_docs
+  court_choice
   #saw_signature_choice
 
   set_progress(100)
@@ -174,7 +177,7 @@ subquestion: |
   * Your monthly expenses, and
   * The value of your belongings.
 
-  If you are filling out this form on behalf of a minor or incompetent adult, you will need that person’s information.
+  If you are filling out this form on behalf of a minor or incompetent adult, you will need that person's information.
 
   You will also need to know information about the court case for which you are requesting a fee waiver. You can find this information on other court papers you have about this case. 
 
@@ -182,11 +185,11 @@ subquestion: |
  
   ${ collapse_template(help_example) }  
 
-  Click on **{green words}** to learn what they mean. Some questions have a question mark in a circle ${ fa_icon("question-circle", color_css="#0dcaf0" ) } that also gives help.
+  Click on **{green words}** to learn what they mean. Some pages have a question mark in a circle ${ fa_icon("question-circle", color_css="#0dcaf0" ) } that helps explain things.
 ---
 template: help_example
 subject: |
-  **You can expand sections like this to show more information.**
+  **You can click sections like this to show more information.**
 content: |  
   This is an example of help. Click again to hide.
 ---
@@ -199,7 +202,7 @@ subquestion: |
   
   **Note:** You can file your ${ form_name } at any time during your court case. It is usually done when a person files their first forms in a case. That way they might have all of the court fees in a case waived.
   
-  Read the "How to Ask the Judge to Participate in a Court Case for Free or at a Reduced Cost" instructions you can download at the end of this program. 
+  To learn more, read the "How to Request a Fee Waiver (Civil)" instructions you can download at the end of this program. 
 ---
 template: get_legal_help
 subject: |
@@ -208,6 +211,19 @@ content: |
   If you have questions or concerns about your legal problem and want legal advice you should talk to a lawyer.
   
   Use [**Get Legal Help**](https://www.illinoislegalaid.org/get-legal-help) to find free or low-cost legal services in your area.
+---
+id: civil circuit court only
+continue button field: civil_fee_waiver
+question: |
+  Civil fee waiver for Circuit Court 
+subquestion: |
+  You can use this progrm to make Fee waiver forms if your case is a civil case in Circuit Court. For example, divorce cases, family cases, eviction cases, small claims cases, foreclosure cases, and lawsuits for injury or property damage. You can also use this fee waiver if you are asking the judge to expunge or seal a criminal case.
+  
+  There are different fee waiver forms to use if:
+
+  * Your case is a criminal, traffic, or juvenile justice case. If you need to ask for a fee waiver in a criminal case, use the [**Criminal Court fee waiver Easy Form**](https://www.illinoislegalaid.org/node/154466).
+  * Your case is in the Appellate Court. If you need to ask for a fee waiver in an Appellate case, use the [**Fee waiver - Appellate Court Easy Form**](https://www.illinoislegalaid.org/node/88446). 
+  * Your case is in the Illinois Supreme Court. If you need to ask for a fee waiver in a Supreme Court case, use the [**Fee waiver - Supreme Court of Illinois Easy Form**](https://www.illinoislegalaid.org/node/158696).
 ---
 id: Do you receive any benefits
 question: |
@@ -230,7 +246,7 @@ fields:
       - AABD - Aid to the Aged, Blind and Disabled: AABD
       - TANF - Temporary Assistance to Needy Families: TANF
       - SNAP - Supplemental Nutrition Assitance Program (Food Stamps): SNAP
-      - GA - General Assistance Program, Transitional Assistance, or State Children and Family Assistance: GA
+      - General Assistance Program (GA), Transitional Assistance, or State Children and Family Assistance: GA
     required: False
 ---
 id: Did you apply for any benefits
@@ -243,23 +259,21 @@ question: |
   % endif 
 subquestion: |
   % if filing_basis == "filing_self":
-  Check any benefits that you have **applied** for but do not yet
-  know if you will receive because your application is pending.
+  Answer **Yes** if you **applied** for any of these benefits but do not yet
+  know if you will receive them because your application is pending.
   % else:
-  Check any benefits that **${ users[0].familiar() }** has **applied**
-  for but does not yet know if they will receive because their application
-  is pending.
+  Answer **Yes** if **${ users[0].familiar() }** has **applied** for any of these benefits but does not yet
+  know if they will receive them because their application is pending.
   % endif
+  
+  * SSI - Supplemental Security Income (not Social Security)
+  * AABD - Aid to the Aged, Blind and Disabled
+  * TANF - Temporary Assistance to Needy Families
+  * SNAP - Supplemental Nutrition Assitance Program (Food Stamps)
+  * General Assistance Program (GA), Transitional Assistance, or State Children and Family Assistance
 fields:
   - no label: user_applied_for_benefits
-    datatype: checkboxes
-    choices:
-      - SSI - Supplemental Security Income (not Social Security): SSI
-      - AABD - Aid to the Aged, Blind and Disabled: AABD
-      - TANF - Temporary Assistance to Needy Families: TANF
-      - SNAP - Supplemental Nutrition Assitance Program (Food Stamps): SNAP
-      - GA - General Assistance Program, Transitional Assistance, or State Children and Family Assistance: GA
-    required: False
+    datatype: yesnoradio
 ---
 depends on:
   - user_benefits
@@ -267,7 +281,7 @@ code: |
   user_receives_benefits = user_benefits.any_true()
 ---
 code: |
-  user_has_applied_for_benefits = user_applied_for_benefits.any_true()
+  user_has_applied_for_benefits = user_applied_for_benefits
 ---
 id: is the user the plaintiff or defendant?
 question: |
@@ -637,19 +651,6 @@ fields:
         * Business or rental income,
         * Veterans benefits, or 
         * Military allowance.      
-#  - "Other kind of income (if more than one, list all)": user_annual_other_kind
-#    maxlength: 30
-#    show if: user_annual_other
-#    default: |
-#      ${ showifdef('user_income_other_kind') }    
-#  - "Amount (if more than one, enter total)": user_annual_other_amount
-#    datatype: currency
-#    min: 0
-#    show if: user_annual_other
-#    default: |
-#      % if defined('user_income_other_amount'):
-#      ${ user_income_other_amount * 12 }
-#      % endif
 validation code: |
   if not (user_annual_none or user_annual_employment or user_annual_unemployment or user_annual_household or user_annual_ss or user_annual_child_support or user_annual_pension or user_annual_other):
     validation_error("Check at least one option.", field="user_annual_other")
@@ -834,7 +835,7 @@ fields:
         * Loans from family or friends.
 validation code: |
   if not (user_expense_none or user_expense_rent or user_expense_mortgage or user_expense_other_mortgage or user_expense_utilities or user_expense_food or user_expense_medical or user_expense_car or user_expense_childcare or user_expense_child_support or user_expense_other):
-    validation_error("Check at least one option.", field="user_expense_debt_other")
+    validation_error("Check at least one option.", field="user_expense_other")
 ---
 id: user other expenses details
 question: |
@@ -1108,14 +1109,15 @@ code: |
     user_asset_other_list.there_is_another = False
 
 ---
-# not used in 2024 forms
 depends on:
   - user_asset_bank_account_amount
   - user_asset_home_amount
   - user_asset_other_real_estate_amount
   - user_asset_vehicle1_amount
   - user_asset_vehicle2_amount
-  - user_asset_other_amount
+  - user_asset_other_list[0].amount
+  - user_asset_other_list[1].amount
+  - user_asset_other_list[2].amount
 code: |
   user_asset_total = (sum_if_defined(
     'user_asset_bank_account_amount'
@@ -1123,15 +1125,9 @@ code: |
     'user_asset_other_real_estate_amount'
     'user_asset_vehicle1_amount',
     'user_asset_vehicle2_amount',
-    'user_asset_other_amount'
-  ))
-  #  ) - 
-  #  sum_if_defined('user_asset_other_real_estate_amount_owed',
-  #    'user_asset_home_amount_owed')
-  #)
-    
-  # 'user_asset_vehicle1_paid',
-  # 'user_asset_vehicle2_paid', 
+    'user_asset_other_list[0].amount',
+    'user_asset_other_list[1].amount',
+    'user_asset_other_list[2].amount' ) - sum_if_defined('user_asset_home_amount_owed') )
 ---
 depends on:
   - user_income_total
@@ -1463,7 +1459,7 @@ id: in re check
 question: |
  Does the court case have the words "**In re:**" in the name?
 subquestion: |
-  Look at the name of the case at the top of the court papers. “In re” is often used in probate, bankruptcy, and some family law cases. For example, a probate case regarding Jane Doe’s estate might be called “In re: Estate of Jane Doe.”
+  Look at the name of the case at the top of the court papers. "In re" is often used in probate, bankruptcy, and some family law cases. For example, a probate case regarding Jane Doe’s estate might be called "In re: Estate of Jane Doe."
 fields:
   - no label: in_re_check
     datatype: yesnoradio
@@ -1521,9 +1517,11 @@ fields:
 ---
 id: docket number
 question: |
-  What is ${ your_or_obo_possessive } case number?
+  Do you know ${ your_or_obo_possessive } case number?
 subquestion: |
-  The case number will be listed on ${ your_or_obo_possessive } court papers. The Circuit Clerk gives each case a number when it is filed. If nothing has been filed yet, check the box.
+  The case number will be listed on ${ your_or_obo_possessive } court papers. The Circuit Clerk gives each case a number when it is filed.
+  
+  If nothing has been filed yet, select **I don't know the case number**.
 
   ${ collapse_template(case_number_help) }  
 fields:
@@ -1538,7 +1536,7 @@ validation code: |
 ---
 template: case_number_help
 subject: |
-  **Where can I find this?**
+  **Where can I find the case number?**
 content: |  
   The case number should be on your court papers. Look at the Complaint or Petition, or the Summons if you received one. It is usually in the top-right part of the first page.
   
@@ -1570,9 +1568,9 @@ terms:
 ---
 template: fee_waiver_signature_help
 subject: |
-  **What does it mean to sign the *Fee waiver*?**
+  **What does it mean to sign the *Application for Waiver of Court Fees*?**
 content: |  
-  By signing your *Fee waiver*, you are certifying that:
+  By signing your Fee waiver Application, you are certifying that:
   
   * Everything on the forms is true and correct, and
   * You understand that making a false statement on the form is perjury, which can result in criminal penalties.
@@ -1628,6 +1626,35 @@ under: |
   % else:
     ${ signer[0].name.full(middle="full") }
   % endif
+---
+id: court choice
+question: |
+  If a judge has questions about the Fee waiver Application, how do you want to attend court?
+subquestion: |
+  When asking for a fee waiver, you should only have to attend court if the judge needs more information.
+
+  The Circuit Clerk should give you details about how to attend court. You might not get your choice, but you can say what you want on your Fee waiver Application.
+  
+fields:
+  - I want: court_choice
+    datatype: checkboxes
+    choices:
+      - A remote court date (video or telephone): remote
+      - An in-person court date: person
+    none of the above: False
+---
+id: bring documents
+continue button field: bring_docs
+question: |
+  Be prepared
+subquestion: |
+  After you file your Fee waiver Application, the judge will review it. If they have questions, you may need to give more information or documentation. For example, you may be asked to show:
+  
+  * Proof of public benefits received,
+  * Proof of income, and
+  * The value of any belongings.
+  
+  If you have a court date for your Fee waiver Application, be sure to bring whatever documentation is requested.
 ---
 id: get docs screen
 event: get_docs_screen
@@ -2085,7 +2112,6 @@ attachments:
       - "user_asset_vehicle2_paid_no": ${ not user_asset_vehicle2_paid if user_asset_vehicle2 else '' }
       - "user_asset_vehicle2": ${ user_asset_vehicle2 }
       - "user_asset_vehicle2_amount": ${ thousands(user_asset_vehicle2_amount, show_decimals=True) if user_asset_vehicle2 else '' }
-      - "user_asset_other_amount": ${ thousands(user_asset_other_amount, show_decimals=True) }
       - "user_asset_other": ${ user_asset_other }
       - "user_asset_other_amount_1":  |
           % if not user_asset_none:
@@ -2112,6 +2138,8 @@ attachments:
           ${ user_asset_other_list[2].name.text }
           % endif
       - "substantial_hardship_explanation": ${ substantial_hardship_explanation }
+      - "court_date_remote_cb": ${ True if court_choice['remote'] == True else '' }
+      - "court_date_in_person_cb": ${ True if court_choice['person'] == True else '' }
       #- "relationship_to_minor": |
       #    % if filing_basis != "filing_self":
       #    ${ relationship_to_minor  }
@@ -2192,14 +2220,6 @@ review:
     button: |
       **Other income (last month)**:
       ${ word(yesno(user_income_other)) }
-  - Edit: user_income_other_amount
-    button: |
-      **Other income amount (last month)**:
-      ${ currency(user_income_other_amount) }
-  - Edit: user_income_other_kind
-    button: |
-      **Kind of other income (last month)**:
-      ${ user_income_other_kind }
   - Edit: user_income_none
     button: |
       **No income (last month)**:
@@ -2353,26 +2373,6 @@ review:
     button: |
       **Other expenses**:
       ${ word(yesno(user_expense_other)) }
-  - Edit: user_expense_other_line1
-    button: |
-      **Kind of other expenses**:
-      ${ user_expense_other_line1 }
-  - Edit: user_expense_other_amount
-    button: |
-      **Other expenses amount**:
-      ${ currency(user_expense_other_amount) }
-  - Edit: user_expense_debt_other
-    button: |
-      **Debt payments**:
-      ${ word(yesno(user_expense_debt_other)) }
-  - Edit: user_expense_debt_other_line1
-    button: |
-      **Kind of debt payments**:
-      ${ user_expense_debt_other_line1 }
-  - Edit: user_expense_debt_other_amount
-    button: |
-      **Debt payments amount**:
-      ${ currency(user_expense_debt_other_amount) }
   - Edit: user_expense_none
     button: |
       **No expenses**:
@@ -2410,10 +2410,6 @@ review:
     button: |
       **Other real estate value**:
       ${ currency(user_asset_other_real_estate_amount) }
-  - Edit: user_asset_other_real_estate_amount_owed
-    button: |
-      **Amount owed on other real estate mortgage**:
-      ${ currency(user_asset_other_real_estate_amount_owed) }
   - Edit: user_asset_vehicle1
     button: |
       **Vehicle**:
@@ -2440,18 +2436,10 @@ review:
       **Second vehicle is paid in full**:
       ${ word(yesno(user_asset_vehicle2_paid)) }
     show if: user_asset_vehicle2
-  - Edit: user_asset_other_amount
-    button: |
-      **Other assets value**:
-      ${ currency(user_asset_other_amount) }
   - Edit: user_asset_other
     button: |
       **Other assets**:
       ${ word(yesno(user_asset_other)) }
-  - Edit: user_asset_other_kind
-    button: |
-      **Kind of other assets**:
-      ${ user_asset_other_kind }
   - Edit: user_asset_none
     button: |
       **No assets**:
@@ -2513,14 +2501,6 @@ review:
       **Your address:**
       % endif
       ${ users[0].address.on_one_line(bare=True) }
-  - Edit: users[0].birth_year
-    button: |
-      % if filing_basis != "filing_self":
-      **${ users[0].familiar() }'s birth year:**
-      % else:
-      **Your birth year:**
-      % endif
-      ${ users[0].birth_year }
   - Edit: signer[0].name.first
     button: |
       **Your name:**
@@ -2574,6 +2554,16 @@ review:
     button: |
       **Do you want to add your e-signature to your fee waiver?**
       ${ word(yesno(e_signature)) }
+  - Edit: court_choice
+    button: |
+      **If the judge has questions about your Fee waiver application, you want to attend court:**
+      
+      % if court_choice['remote']:
+      * Remotely (by video or telephone)
+      % endif
+      % if court_choice['person']:
+      * In person
+      % endif
 ---
 continue button field: plaintiffs.revisit
 question: |
@@ -2733,14 +2723,6 @@ review:
     button: |
       **Other income (last month)**:
       ${ word(yesno(user_income_other)) }
-  - Edit: user_income_other_amount
-    button: |
-      **Other income amount (last month)**:
-      ${ currency(user_income_other_amount) }
-  - Edit: user_income_other_kind
-    button: |
-      **Kind of other income (last month)**:
-      ${ user_income_other_kind }
   - Edit: user_income_none
     button: |
       **No income (last month)**:
@@ -2903,26 +2885,6 @@ review:
     button: |
       **Other expenses**:
       ${ word(yesno(user_expense_other)) }
-  - Edit: user_expense_other_line1
-    button: |
-      **Kind of other expenses**:
-      ${ user_expense_other_line1 }
-  - Edit: user_expense_other_amount
-    button: |
-      **Other expenses amount**:
-      ${ currency(user_expense_other_amount) }
-  - Edit: user_expense_debt_other
-    button: |
-      **Debt payments**:
-      ${ word(yesno(user_expense_debt_other)) }
-  - Edit: user_expense_debt_other_line1
-    button: |
-      **Kind of debt payments**:
-      ${ user_expense_debt_other_line1 }
-  - Edit: user_expense_debt_other_amount
-    button: |
-      **Debt payments amount**:
-      ${ currency(user_expense_debt_other_amount) }
   - Edit: user_expense_none
     button: |
       **No expenses**:
@@ -2969,10 +2931,6 @@ review:
     button: |
       **Other real estate value**:
       ${ currency(user_asset_other_real_estate_amount) }
-  - Edit: user_asset_other_real_estate_amount_owed
-    button: |
-      **Amount owed on other real estate mortgage**:
-      ${ currency(user_asset_other_real_estate_amount_owed) }
   - Edit: user_asset_vehicle1
     button: |
       **Vehicle**:
@@ -2999,18 +2957,10 @@ review:
       **Second vehicle is paid in full**:
       ${ word(yesno(user_asset_vehicle2_paid)) }
     show if: user_asset_vehicle2
-  - Edit: user_asset_other_amount
-    button: |
-      **Other assets value**:
-      ${ currency(user_asset_other_amount) }
   - Edit: user_asset_other
     button: |
       **Other assets**:
       ${ word(yesno(user_asset_other)) }
-  - Edit: user_asset_other_kind
-    button: |
-      **Kind of other assets**:
-      ${ user_asset_other_kind }
   - Edit: user_asset_none
     button: |
       **No assets**:
@@ -3090,14 +3040,6 @@ review:
       **Your address:**
       % endif
       ${ users[0].address.on_one_line(bare=True) }
-  - Edit: users[0].birth_year
-    button: |
-      % if filing_basis != "filing_self":
-      **${ users[0].familiar() }'s birth year:**
-      % else:
-      **Your birth year:**
-      % endif
-      ${ users[0].birth_year }
   - Edit: signer[0].name.first
     button: |
       **Your name:**
@@ -3150,3 +3092,13 @@ review:
     button: |
       **Do you want to add your e-signature to your fee waiver?**
       ${ word(yesno(e_signature)) }
+  - Edit: court_choice
+    button: |
+      **If the judge has questions about your Fee waiver application, you want to attend court:**
+      
+      % if court_choice['remote']:
+      * Remotely (by video or telephone)
+      % endif
+      % if court_choice['person']:
+      * In person
+      % endif
