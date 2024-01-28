@@ -1888,8 +1888,8 @@ attachments:
       - "benefits_tanf": ${ True if user_benefits['TANF'] == True else '' }
       - "user_receives_benefits_yes": ${ user_benefits.any_true() }
       - "user_receives_benefits_no": ${ user_benefits.all_false() }
-      - "user_pending_benefits_yes": ${ user_applied_for_benefits.any_true() }
-      - "user_pending_benefits_no": ${ user_applied_for_benefits.all_false() }
+      - "user_pending_benefits_yes": ${ True if user_applied_for_benefits else '' }
+      - "user_pending_benefits_no": ${ True if user_applied_for_benefits == False else '' }
       - "user_income_ss": |
           % if not user_income_none:
           ${ user_income_ss }
@@ -2158,7 +2158,7 @@ review:
       ${ word(yesno(user_benefits.any_true())) }
   - Edit: user_has_dependents
     button: |
-      **Supporting any dependents?**
+      **Supporting any dependents in same household?**
       ${ word(yesno(user_has_dependents)) }
   - Edit: user_dependents_adults
     button: |
@@ -2174,11 +2174,11 @@ review:
       ${ word(yesno(user_applied_for_benefits)) }
   - Edit: user_income_employment
     button: |
-      **Employment income (last month)?**
+      **Income from work (last month)?**
       ${ word(yesno(user_income_employment)) }
   - Edit: user_income_employment_amount
     button: |
-      **Employment income amount (last month)**:
+      **Income from work amount (last month)**:
       ${ currency(user_income_employment_amount) }
   - Edit: user_income_ss
     button: |
@@ -2236,61 +2236,64 @@ review:
     button: |
       **No income (last month)?**
       ${ word(yesno(user_income_none)) }
-  - Edit: user_income_total
+  - Edit: 
+      - user_income_none
+      - recompute:
+        - user_income_total
     button: |
       **Total income (last month)**:
       ${ currency(user_income_total) }
   - Edit: user_annual_employment
     button: |
-      **Annual income from work?**
+      **Income from work (last 12 months)?**
       ${ word(yesno(user_annual_employment)) }
   - Edit: user_annual_employment_amount
     button: |
-      **Work income amount (last year)**:
+      **Income from work amount (last 12 months)**:
       ${ currency(user_annual_employment_amount) }
   - Edit: user_annual_ss
     button: |
-      **Annual Social Security?**
+      **Social Security (last 12 months)?**
       ${ word(yesno(user_annual_ss)) }
   - Edit: user_annual_ss_amount
     button: |
-      **Social Security income amount (last year)**:
+      **Social Security income amount (last 12 months)**:
       ${ currency(user_annual_ss_amount) }
   - Edit: user_annual_child_support
     button: |
-      **Annual child support?**
+      **Child support (last 12 months)?**
       ${ word(yesno(user_annual_child_support)) }
   - Edit: user_annual_child_support_amount
     button: |
-      **Child support amount (last year)**:
+      **Child support amount (last 12 months)**:
       ${ currency(user_annual_child_support_amount) }
   - Edit: user_annual_unemployment
     button: |
-      **Annual unemployment?**
+      **Unemployment benefits (last 12 months)?**
       ${ word(yesno(user_annual_unemployment)) }
   - Edit: user_annual_unemployment_amount
     button: |
-      **Unemployment benefits amount (last year)**:
+      **Unemployment benefits amount (last 12 months)**:
       ${ currency(user_annual_unemployment_amount) }
   - Edit: user_annual_pension
     button: |
-      **Annual pension?**
+      **Pension (last 12 months)?**
       ${ word(yesno(user_annual_pension)) }
   - Edit: user_annual_pension_amount
     button: |
-      **Pension amount (last year)**:
+      **Pension amount (last 12 months)**:
       ${ currency(user_annual_pension_amount) }
   - Edit: user_annual_household
     button: |
-      **Annual household income?**
+      **Household income (last 12 months)?**
       ${ word(yesno(user_annual_household)) }
   - Edit: user_annual_household_amount
     button: |
-      **Household income amount (last year)**:
+      **Household income amount (last 12 months)**:
       ${ currency(user_annual_household_amount) }
   - Edit: user_annual_other
     button: |
-      **Other income (last year)?**
+      **Other income (last 12 months)?**
       ${ word(yesno(user_annual_other)) }
   - Edit: user_annual_other_list.revisit
     button: |
@@ -2302,11 +2305,14 @@ review:
     show if: user_annual_other
   - Edit: user_annual_none
     button: |
-      **No income (last year)?**
+      **No income (last 12 months)?**
       ${ word(yesno(user_annual_none)) }
-  - Edit: user_annual_total
+  - Edit: 
+      - user_annual_none
+      - recompute:
+        - user_annual_total
     button: |
-      **Total income (last year)**:
+      **Total income (last 12 months)**:
       ${ currency(user_annual_total) }
 
   - Edit: user_expense_rent
@@ -2397,7 +2403,10 @@ review:
     button: |
       **No expenses?**
       ${ word(yesno(user_expense_none)) }
-  - Edit: user_expense_total
+  - Edit: 
+      - user_expense_none
+      - recompute:
+        - user_expense_total
     button: |
       **Total expenses**:
       ${ currency(user_expense_total) }
@@ -2473,10 +2482,6 @@ review:
     button: |
       **No assets?**
       ${ word(yesno(user_asset_none)) }
-  - Edit: substantial_hardship_explanation
-    button: |
-      **Substantial hardship because**:
-      > ${ substantial_hardship_explanation }
 
   - Edit: plaintiffs.revisit
     button: |
@@ -2510,8 +2515,11 @@ review:
   - Edit: docket_number
     button: |
       **Case number**:
+      % if dont_know_docket_number:
+      I don't know.
+      % else:
       ${ docket_number }
-
+      % endif
   - Edit: users[0].name.first
     button: |
       **Your name:**
@@ -2535,6 +2543,10 @@ review:
       **Your name:**
       ${ signer[0].name.full(middle="full") }
     show if: filing_basis != "filing_self"
+  - Edit: substantial_hardship_explanation
+    button: |
+      **Substantial hardship because**:
+      > ${ substantial_hardship_explanation }
   - Edit: signer[0].address.address
     button: |
       **Your address:**
@@ -2786,7 +2798,7 @@ review:
       ${ word(yesno(user_benefits.any_true())) }
   - Edit: user_has_dependents
     button: |
-      **Supporting any dependents?**
+      **Supporting any dependents in same household?**
       ${ word(yesno(user_has_dependents)) }
   - Edit: user_dependents_adults
     button: |
@@ -2802,11 +2814,11 @@ review:
       ${ word(yesno(user_applied_for_benefits)) }
   - Edit: user_income_employment
     button: |
-      **Employment income (last month)?**
+      **Income from work (last month)?**
       ${ word(yesno(user_income_employment)) }
   - Edit: user_income_employment_amount
     button: |
-      **Employment income amount (last month)**:
+      **Income from work amount (last month)**:
       ${ currency(user_income_employment_amount) }
   - Edit: user_income_ss
     button: |
@@ -2864,61 +2876,64 @@ review:
     button: |
       **No income (last month)?**
       ${ word(yesno(user_income_none)) }
-  - Edit: user_income_total
+  - Edit: 
+      - user_income_none
+      - recompute:
+        - user_income_total
     button: |
       **Total income (last month)**:
       ${ currency(user_income_total) }
   - Edit: user_annual_employment
     button: |
-      **Annual income from work?**
+      **Income from work (last 12 months)?**
       ${ word(yesno(user_annual_employment)) }
   - Edit: user_annual_employment_amount
     button: |
-      **Work income amount (last year)**:
+      **Income from work amount (last 12 months)**:
       ${ currency(user_annual_employment_amount) }
   - Edit: user_annual_ss
     button: |
-      **Annual Social Security?**
+      **Social Security (last 12 months)?**
       ${ word(yesno(user_annual_ss)) }
   - Edit: user_annual_ss_amount
     button: |
-      **Social Security income amount (last year)**:
+      **Social Security income amount (last 12 months)**:
       ${ currency(user_annual_ss_amount) }
   - Edit: user_annual_child_support
     button: |
-      **Annual child support?**
+      **Child support (last 12 months)?**
       ${ word(yesno(user_annual_child_support)) }
   - Edit: user_annual_child_support_amount
     button: |
-      **Child support amount (last year)**:
+      **Child support amount (last 12 months)**:
       ${ currency(user_annual_child_support_amount) }
   - Edit: user_annual_unemployment
     button: |
-      **Annual unemployment?**
+      **Unemployment benefits (last 12 months)?**
       ${ word(yesno(user_annual_unemployment)) }
   - Edit: user_annual_unemployment_amount
     button: |
-      **Unemployment benefits amount (last year)**:
+      **Unemployment benefits amount (last 12 months)**:
       ${ currency(user_annual_unemployment_amount) }
   - Edit: user_annual_pension
     button: |
-      **Annual pension?**
+      **Pension (last 12 months)?**
       ${ word(yesno(user_annual_pension)) }
   - Edit: user_annual_pension_amount
     button: |
-      **Pension amount (last year)**:
+      **Pension amount (last 12 months)**:
       ${ currency(user_annual_pension_amount) }
   - Edit: user_annual_household
     button: |
-      **Annual household income?**
+      **Household income (last 12 months)?**
       ${ word(yesno(user_annual_household)) }
   - Edit: user_annual_household_amount
     button: |
-      **Household income amount (last year)**:
+      **Household income amount (last 12 months)**:
       ${ currency(user_annual_household_amount) }
   - Edit: user_annual_other
     button: |
-      **Other income (last year)?**
+      **Other income (last 12 months)?**
       ${ word(yesno(user_annual_other)) }
   - Edit: user_annual_other_list.revisit
     button: |
@@ -2930,11 +2945,14 @@ review:
     show if: user_annual_other
   - Edit: user_annual_none
     button: |
-      **No income (last year)?**
+      **No income (last 12 months)?**
       ${ word(yesno(user_annual_none)) }
-  - Edit: user_annual_total
+  - Edit: 
+      - user_annual_none
+      - recompute:
+        - user_annual_total
     button: |
-      **Total income (last year)**:
+      **Total income (last 12 months)**:
       ${ currency(user_annual_total) }
 
 ---
@@ -3034,7 +3052,10 @@ review:
     button: |
       **No expenses**:
       ${ word(yesno(user_expense_none)) }
-  - Edit: user_expense_total
+  - Edit: 
+      - user_expense_none
+      - recompute:
+        - user_expense_total
     button: |
       **Total expenses**:
       ${ currency(user_expense_total) }
@@ -3058,7 +3079,7 @@ review:
       ${ currency(user_asset_bank_account_amount) }
   - Edit: user_asset_home
     button: |
-      **Home*?*:
+      **Home?**
       ${ word(yesno(user_asset_home)) }
   - Edit: user_asset_home_amount
     button: |
@@ -3159,7 +3180,11 @@ review:
   - Edit: docket_number
     button: |
       **Case number**:
+      % if dont_know_docket_number:
+      I don't know.
+      % else:
       ${ docket_number }
+      % endif
 
 ---
 id: about you review screen
@@ -3184,6 +3209,18 @@ review:
     button: |
       **Substantial hardship because**:
       > ${ substantial_hardship_explanation }
+  - Edit: user_has_dependents
+    button: |
+      **Supporting any dependents in same household?**
+      ${ word(yesno(user_has_dependents)) }
+  - Edit: user_dependents_adults
+    button: |
+      **Number of adult dependents**:
+      ${ user_dependents_adults }
+  - Edit: user_dependents_children
+    button: |
+      **Number of minor dependents**:
+      ${ user_dependents_children }
   - Edit: users[0].address.address
     button: |
       % if filing_basis != "filing_self":
