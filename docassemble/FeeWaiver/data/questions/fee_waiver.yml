@@ -80,7 +80,6 @@ code: |
       user_asset_other_list.gather()
     if not poverty_scale_get_income_limit(household_size=household_size, multiplier=1.25) is None:
       show_qualification_guess
-  substantial_hardship_explanation
     
   set_progress(50)
   nav.set_section('section_case_info')
@@ -96,6 +95,7 @@ code: |
 
   set_progress(75)
   nav.set_section('section_about_you')
+  substantial_hardship_explanation
   #users[0].birth_year
   users[0].address.address
   if filing_basis == "filing_self":
@@ -1078,9 +1078,9 @@ subquestion: |
   % endif
   % if user_asset_vehicle1:
    * A vehicle worth $${thousands(user_asset_vehicle1_amount, show_decimals=True)}
-  % endif
   % if user_asset_vehicle2:
    * A second vehicle worth $${thousands(user_asset_vehicle2_amount, show_decimals=True)}
+  % endif
   % endif
   % for other_asset in user_asset_other_list:
    * ${other_asset.name.text} worth $${thousands(other_asset.amount, show_decimals=True)}
@@ -1290,7 +1290,7 @@ fields:
     datatype: al_international_phone
     required: False
   - label: |
-      I have an email address
+      Do you have an email address?
     field: x.has_email_address      
     datatype: yesnoradio
   - note: |
@@ -1334,14 +1334,14 @@ subquestion: |
   
   Complete this sentence:
   
-  **My family or I would face substantial hardship if I have to pay the fees, costs, and charges because:**
+  **It would be a substantial hardship for me or my family if I have to pay the fees, costs, and charges because:**
   % else:
-  If you want to explain to a judge why ${ users[0].familiar() } would be 
+  If you want to explain to the judge why ${ users[0].familiar() } would be 
   harmed if they do not get a fee waiver, you can explain it here. 
   
   Complete this sentence:
   
-  **${ users[0].familiar() } or their family would face substantial hardship if they have to pay the fees, costs, and charges because:**
+  **It would be a substantial hardship for ${ users[0].familiar() } or their family if they have to pay the fees, costs, and charges because:**
   % endif
 fields:
   - label: (Optional)
@@ -2224,6 +2224,14 @@ review:
     button: |
       **Other income (last month)?**
       ${ word(yesno(user_income_other)) }
+  - Edit: user_income_other_list.revisit
+    button: |
+      **Other income from last month (Edit to change details):**
+
+      % for my_var in user_income_other_list:
+      * $${thousands(my_var.amount, show_decimals=True)} from ${my_var.name.text}
+      % endfor
+    show if: user_income_other
   - Edit: user_income_none
     button: |
       **No income (last month)?**
@@ -2282,8 +2290,16 @@ review:
       ${ currency(user_annual_household_amount) }
   - Edit: user_annual_other
     button: |
-      **Annual other income?**
+      **Other income (last year)?**
       ${ word(yesno(user_annual_other)) }
+  - Edit: user_annual_other_list.revisit
+    button: |
+      **Other income from last year (Edit to change details):**
+
+      % for my_var in user_annual_other_list:
+      * $${thousands(my_var.amount, show_decimals=True)} from ${my_var.name.text}
+      % endfor
+    show if: user_annual_other
   - Edit: user_annual_none
     button: |
       **No income (last year)?**
@@ -2369,6 +2385,14 @@ review:
     button: |
       **Other expenses?**
       ${ word(yesno(user_expense_other)) }
+  - Edit: user_expense_other_list.revisit
+    button: |
+      **Other monthly expenses (Edit to change details):**
+
+      % for my_var in user_expense_other_list:
+      * $${thousands(my_var.amount, show_decimals=True)} for ${my_var.name.text}
+      % endfor
+    show if: user_expense_other
   - Edit: user_expense_none
     button: |
       **No expenses?**
@@ -2436,6 +2460,15 @@ review:
     button: |
       **Other assets?**
       ${ word(yesno(user_asset_other)) }
+  - Edit: user_asset_other_list.revisit
+    button: |
+      **Other monthly assets (Edit to change details):**
+
+      % for my_var in user_asset_other_list:
+      * ${my_var.name.text} worth $${thousands(my_var.amount, show_decimals=True)} 
+      % endfor
+    show if: user_asset_other
+      
   - Edit: user_asset_none
     button: |
       **No assets?**
@@ -2645,6 +2678,98 @@ edit:
   - address.address
   - phone_number
 confirm: True
+---
+id: other monthly income revisit
+continue button field: user_income_other_list.revisit
+question: |
+  Edit other income from last month
+subquestion: |
+  ${ user_income_other_list.table }
+
+  % if user_income_other_list.number_gathered() < 3:
+  ${ user_income_other_list.add_action() }
+  % endif
+---
+table: user_income_other_list.table
+rows: user_income_other_list
+columns:
+  - Income source: |
+      row_item.name.text if defined("row_item.name.text") else ""
+  - Amount: |
+      "$" + str(thousands(row_item.amount, show_decimals=True)) if defined("row_item.name.text") else ""
+edit:
+  - name.text
+delete buttons: True
+confirm: True
+---
+id: other annual income revisit
+continue button field: user_annual_other_list.revisit
+question: |
+  Edit other income from last 12 months
+subquestion: |
+  ${ user_annual_other_list.table }
+
+  % if user_annual_other_list.number_gathered() < 3:
+  ${ user_annual_other_list.add_action() }
+  % endif
+---
+table: user_annual_other_list.table
+rows: user_annual_other_list
+columns:
+  - Income source: |
+      row_item.name.text if defined("row_item.name.text") else ""
+  - Amount: |
+      "$" + str(thousands(row_item.amount, show_decimals=True)) if defined("row_item.name.text") else ""
+edit:
+  - name.text
+delete buttons: True
+confirm: True
+---
+id: other expenses revisit
+continue button field: user_expense_other_list.revisit
+question: |
+  Edit other monthly expenses
+subquestion: |
+  ${ user_expense_other_list.table }
+
+  % if user_expense_other_list.number_gathered() < 3:
+  ${ user_expense_other_list.add_action() }
+  % endif
+---
+table: user_expense_other_list.table
+rows: user_expense_other_list
+columns:
+  - Expense: |
+      row_item.name.text if defined("row_item.name.text") else ""
+  - Amount: |
+      "$" + str(thousands(row_item.amount, show_decimals=True)) if defined("row_item.name.text") else ""
+edit:
+  - name.text
+delete buttons: True
+confirm: True
+---
+id: other assets revisit
+continue button field: user_asset_other_list.revisit
+question: |
+  Edit other assets
+subquestion: |
+  ${ user_asset_other_list.table }
+
+  % if user_asset_other_list.number_gathered() < 3:
+  ${ user_asset_other_list.add_action() }
+  % endif
+---
+table: user_asset_other_list.table
+rows: user_asset_other_list
+columns:
+  - Asset: |
+      row_item.name.text if defined("row_item.name.text") else ""
+  - Value: |
+      "$" + str(thousands(row_item.amount, show_decimals=True)) if defined("row_item.name.text") else ""
+edit:
+  - name.text
+delete buttons: True
+confirm: True
 
 ---
 id: income review screen
@@ -2727,6 +2852,14 @@ review:
     button: |
       **Other income (last month)?**
       ${ word(yesno(user_income_other)) }
+  - Edit: user_income_other_list.revisit
+    button: |
+      **Other income from last month (Edit to change details):**
+
+      % for my_var in user_income_other_list:
+      * $${thousands(my_var.amount, show_decimals=True)} from ${my_var.name.text}
+      % endfor
+    show if: user_income_other
   - Edit: user_income_none
     button: |
       **No income (last month)?**
@@ -2785,8 +2918,16 @@ review:
       ${ currency(user_annual_household_amount) }
   - Edit: user_annual_other
     button: |
-      **Annual other income?**
+      **Other income (last year)?**
       ${ word(yesno(user_annual_other)) }
+  - Edit: user_annual_other_list.revisit
+    button: |
+      **Other income from last year (Edit to change details):**
+
+      % for my_var in user_annual_other_list:
+      * $${thousands(my_var.amount, show_decimals=True)} from ${my_var.name.text}
+      % endfor
+    show if: user_annual_other
   - Edit: user_annual_none
     button: |
       **No income (last year)?**
@@ -2795,14 +2936,6 @@ review:
     button: |
       **Total income (last year)**:
       ${ currency(user_annual_total) }
-  #- Edit: user_annual_other_amount
-  #  button: |
-  #    **Other income amount (last year)**:
-  #    ${ currency(user_annual_other_amount) }
-  #- Edit: user_annual_other_kind
-  #  button: |
-  #    **Other kinds of income**:
-  #    ${ user_annual_other_kind }
 
 ---
 id: expenses review screen
@@ -2889,6 +3022,14 @@ review:
     button: |
       **Other expenses?**
       ${ word(yesno(user_expense_other)) }
+  - Edit: user_expense_other_list.revisit
+    button: |
+      **Other monthly expenses (Edit to change details):**
+
+      % for my_var in user_expense_other_list:
+      * $${thousands(my_var.amount, show_decimals=True)} for ${my_var.name.text}
+      % endfor
+    show if: user_expense_other
   - Edit: user_expense_none
     button: |
       **No expenses**:
@@ -2969,11 +3110,14 @@ review:
     button: |
       **No assets?**
       ${ word(yesno(user_asset_none)) }
-  - Edit: substantial_hardship_explanation
+  - Edit: user_asset_other_list.revisit
     button: |
-      **Substantial hardship because**:
-      > ${ substantial_hardship_explanation }
+      **Other monthly assets (Edit to change details):**
 
+      % for my_var in user_asset_other_list:
+      * ${my_var.name.text} worth $${thousands(my_var.amount, show_decimals=True)} 
+      % endfor
+    show if: user_asset_other
 ---
 id: court case info review screen
 section: Court case info
@@ -3036,6 +3180,10 @@ review:
       **Name of person you are filing for:**
       ${ users[0].name.full(middle="full") }
     show if: filing_basis != "filing_self"
+  - Edit: substantial_hardship_explanation
+    button: |
+      **Substantial hardship because**:
+      > ${ substantial_hardship_explanation }
   - Edit: users[0].address.address
     button: |
       % if filing_basis != "filing_self":
