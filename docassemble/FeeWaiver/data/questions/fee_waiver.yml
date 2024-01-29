@@ -7,7 +7,7 @@ metadata:
 ---
 include:
   - docassemble.AssemblyLine:al_package.yml
-  - docassemble.ALToolbox:phone-number-validation.yml  
+  #- docassemble.ALToolbox:phone-number-validation.yml  
   - docassemble.ILAO:ilao-interview-framework.yml
   - docassemble.ILAO:shared-basic-questions.yml
 ---
@@ -57,11 +57,11 @@ code: |
   filing_basis
 
   nav.set_section('section_income')
+  user_has_dependents
   if user_receives_benefits:
     user_qualifies_interstitial
   else:
     user_applied_for_benefits
-    user_has_dependents
     set_progress(25)
     user_income_none
     if user_income_other:
@@ -118,6 +118,10 @@ id: trial court county
 continue button field: case_county
 question: |
   In which county was this case filed?
+subquestion: |
+  % if user_ask_role == "plaintiff":
+  If you are starting a new case, select the county where you will file.
+  % endif
 fields:
   - no label: trial_court_index
     code: |
@@ -217,7 +221,7 @@ continue button field: civil_fee_waiver
 question: |
   Civil fee waiver for Circuit Court 
 subquestion: |
-  You can use this progrm to make Fee waiver forms if your case is a civil case in Circuit Court. For example, divorce cases, family cases, eviction cases, small claims cases, foreclosure cases, and lawsuits for injury or property damage. You can also use this fee waiver if you are asking the judge to expunge or seal a criminal case.
+  You can use this progrm to make Fee waiver forms if you have a **civil case** in Circuit Court. For example, divorce cases, family cases, eviction cases, small claims cases, foreclosure cases, and lawsuits for injury or property damage. You can also use this fee waiver if you are asking the judge to expunge or seal a criminal case.
   
   There are different fee waiver forms to use if:
 
@@ -1312,13 +1316,7 @@ template: contact_info_help
 subject: |
   **Why do I need to include this?**
 content: |  
-  % if al_form_type in ['starts_case','existing_case','appeal']:
-  The court **must** be able to reach you. So you have to give them some way to do this.
-  
-  Some forms allow you to tell the court you need to keep your address, phone, and email confidential, so that only court staff can see this information. 
-  % else:
-  It is important that the person or organization you deliver this form to is able to contact you. Make sure to include at least one way to reach you other than mail.
-  % endif
+  The court must be able to reach you, so you need to include some contact information.
 ---
 id: substantial hardship
 question: |
@@ -1330,22 +1328,21 @@ question: |
 subquestion: |
   % if filing_basis == "filing_self":
   If you want to explain to a judge why you would be harmed if you do not
-  get a fee waiver, you can explain it here.
+  get a fee waiver, you can explain it here. This is optional.
   
   Complete this sentence:
   
   **It would be a substantial hardship for me or my family if I have to pay the fees, costs, and charges because:**
   % else:
   If you want to explain to the judge why ${ users[0].familiar() } would be 
-  harmed if they do not get a fee waiver, you can explain it here. 
+  harmed if they do not get a fee waiver, you can explain it here. This is optional.
   
   Complete this sentence:
   
   **It would be a substantial hardship for ${ users[0].familiar() } or their family if they have to pay the fees, costs, and charges because:**
   % endif
 fields:
-  - label: (Optional)
-    field: substantial_hardship_explanation
+  - no label: substantial_hardship_explanation
     datatype: area
     rows: 5
     maxlength: 500
@@ -1629,19 +1626,19 @@ under: |
 ---
 id: court choice
 question: |
-  If a judge has questions about the Fee waiver Application, how do you want to attend court?
+  If the judge has questions about the Fee waiver Application, how do you want to attend court?
 subquestion: |
-  When asking for a fee waiver, you should only have to attend court if the judge needs more information.
-
-  The Circuit Clerk should give you details about how to attend court. You might not get your choice, but you can say what you want on your Fee waiver Application.
+  You might already have a court date scheduled.
   
+  Some courts may ask for a separate court date for more information about your Fee waiver Application. You might not get your choice, but you can say what you want on your Fee waiver Application.
+
+  The Circuit Clerk should give you details about how to attend court. 
 fields:
-  - I want: court_choice
-    datatype: checkboxes
+  - no label: court_choice
+    datatype: radio
     choices:
-      - A remote court date (video or telephone): remote
-      - An in-person court date: person
-    none of the above: False
+      - I want a remote court date (video or telephone).: remote
+      - I want an in-person court date.: person
 ---
 id: bring documents
 continue button field: bring_docs
@@ -1663,7 +1660,7 @@ question: |
 subquestion: |
   Your forms are ready. View and download your forms below. Click **Make changes** to fix any mistakes.
 
-  This program does not file your Fee waiver with the court. You will need to do this yourself. Learn about [**e-filing in Illinois**](https://www.illinoiscourts.gov/eservices/efileil/).
+  This program does not file your Fee waiver with the court. You will need to do this yourself. Learn about [**e-filing in Illinois**](https://www.illinoiscourts.gov/eservices/information-for-filers-without-lawyers).
 
   ${ action_button_html(url_action('review_IL_fee_waiver'), label=':edit: Make changes', color='success', size="md") }
   
@@ -1673,7 +1670,7 @@ subquestion: |
 
   ${ al_user_bundle.send_button_html(show_editable_checkbox=False) }
 
-  **Note:** This program does not file your Fee waiver with the court. Learn about [**e-filing in Illinois**](https://www.illinoiscourts.gov/eservices/efileil/).
+  **Note:** This program does not file your Fee waiver with the court. Learn about [**e-filing in Illinois**](https://www.illinoiscourts.gov/eservices/information-for-filers-without-lawyers).
   
   Thank you for using ILAO Easy Forms!
 #buttons:
@@ -2138,8 +2135,8 @@ attachments:
           ${ user_asset_other_list[2].name.text }
           % endif
       - "substantial_hardship_explanation": ${ substantial_hardship_explanation }
-      - "court_date_remote_cb": ${ True if court_choice['remote'] == True else '' }
-      - "court_date_in_person_cb": ${ True if court_choice['person'] == True else '' }
+      - "court_date_remote_cb": ${ True if court_choice == 'remote' else '' }
+      - "court_date_in_person_cb": ${ True if court_choice == 'person' else '' }
       #- "relationship_to_minor": |
       #    % if filing_basis != "filing_self":
       #    ${ relationship_to_minor  }
@@ -2152,10 +2149,6 @@ question: |
 subquestion: |
   Edit your answers below.
 review:
-  - Edit: user_benefits
-    button: |
-      **Receives public benefits?**
-      ${ word(yesno(user_benefits.any_true())) }
   - Edit: user_has_dependents
     button: |
       **Supporting any dependents in same household?**
@@ -2168,6 +2161,10 @@ review:
     button: |
       **Number of minor dependents**:
       ${ user_dependents_children }
+  - Edit: user_benefits
+    button: |
+      **Receives public benefits?**
+      ${ word(yesno(user_benefits.any_true())) }
   - Edit: user_applied_for_benefits
     button: |
       **Applied for public benefits?**
@@ -2599,16 +2596,12 @@ review:
     button: |
       **If the judge has questions about your Fee waiver application, you want to attend court:**
       
-      % if court_choice['remote']:
+      % if court_choice == 'remote':
       * Remotely (by video or telephone)
       % endif
-      % if court_choice['person']:
+      % if court_choice == 'person':
       * In person
       % endif
-      % if not court_choice['remote'] and not court_choice['person']:
-      * No choice selected
-      % endif
-      
 ---
 continue button field: plaintiffs.revisit
 question: |
@@ -2792,10 +2785,6 @@ question: |
 subquestion: |
   Edit your answers below.
 review:
-  - Edit: user_benefits
-    button: |
-      **Receives public benefits?**
-      ${ word(yesno(user_benefits.any_true())) }
   - Edit: user_has_dependents
     button: |
       **Supporting any dependents in same household?**
@@ -2808,6 +2797,10 @@ review:
     button: |
       **Number of minor dependents**:
       ${ user_dependents_children }
+  - Edit: user_benefits
+    button: |
+      **Receives public benefits?**
+      ${ word(yesno(user_benefits.any_true())) }
   - Edit: user_applied_for_benefits
     button: |
       **Applied for public benefits?**
@@ -3285,12 +3278,9 @@ review:
     button: |
       **If the judge has questions about your Fee waiver application, you want to attend court:**
       
-      % if court_choice['remote']:
+      % if court_choice == 'remote':
       * Remotely (by video or telephone)
       % endif
-      % if court_choice['person']:
+      % if court_choice == 'person':
       * In person
-      % endif
-      % if not court_choice['remote'] and not court_choice['person']:
-      * No choice selected
       % endif
