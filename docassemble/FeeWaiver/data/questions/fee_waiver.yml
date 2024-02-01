@@ -55,12 +55,14 @@ code: |
   set_progress(10)
   civil_fee_waiver
   filing_basis
+  trial_court.address.address
 
   nav.set_section('section_income')
   user_has_dependents
   if user_receives_benefits:
-    user_qualifies_interstitial
-  else:
+    if trial_court_index != "-1":
+      user_qualifies_interstitial
+  if not user_receives_benefits or trial_court_index == "-1":
     user_applied_for_benefits
     set_progress(25)
     user_income_none
@@ -88,7 +90,6 @@ code: |
   other_parties.gather()  
   if in_re_check == True:
     in_re_label
-  trial_court.address.address
   docket_number
   plaintiffs
   defendants
