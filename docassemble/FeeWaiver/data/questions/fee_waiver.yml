@@ -222,7 +222,7 @@ continue button field: civil_fee_waiver
 question: |
   Civil fee waiver for Circuit Court 
 subquestion: |
-  You can use this progrm to make Fee waiver forms if you have a **civil case** in Circuit Court. For example, divorce cases, family cases, eviction cases, small claims cases, foreclosure cases, and lawsuits for injury or property damage. You can also use this fee waiver if you are asking the judge to expunge or seal a criminal case.
+  You can use this program to make Fee waiver forms if you have a **civil case** in Circuit Court. For example, divorce cases, family cases, eviction cases, small claims cases, foreclosure cases, and lawsuits for injury or property damage. You can also use this fee waiver if you are asking the judge to expunge or seal a criminal case.
   
   There are different fee waiver forms to use if:
 
@@ -1218,7 +1218,7 @@ content: |
   and [**735 ILCS 5/12-1001**](https://www.ilga.gov/legislation/ilcs/fulltext.asp?DocName=073500050K12-901).
   
   
-  The judge may decide that ${ you_or_they } qualify for a partial redicution in court fees even if ${ you_or_they } do not qualify for a full waiver.
+  The judge may decide that ${ you_or_they } qualify for a partial reduction in court fees even if ${ you_or_they } do not qualify for a full waiver.
   
   
 ---
@@ -1526,6 +1526,7 @@ fields:
   - I don't know the case number: dont_know_docket_number
     datatype: yesno    
   - Case number: docket_number
+    maxlength: 20
     hide if: dont_know_docket_number
 validation code: |
   # This should be safe to 
