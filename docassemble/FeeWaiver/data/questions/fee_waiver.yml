@@ -65,21 +65,22 @@ code: |
   if not user_receives_benefits or trial_court_index == "-1":
     user_applied_for_benefits
     set_progress(25)
-    user_income_none
-    if user_income_other:
-      user_income_other_list.gather()
-    user_annual_none
-    if user_annual_other:
-      user_annual_other_list.gather()
+    if not user_income_none:
+      if user_income_other:
+        user_income_other_list.gather()
+    if not user_annual_none:
+      if user_annual_other:
+        user_annual_other_list.gather()
     nav.set_section('section_expenses')
-    user_expense_none
-    if user_expense_other:
-      user_expense_other_list.gather()
+    if not user_expense_none:
+      if user_expense_other:
+        user_expense_other_list.gather()
     set_progress(35)
     nav.set_section('section_assets')
     ask_user_assets
-    if user_asset_other:
-      user_asset_other_list.gather()
+    if not user_asset_none:
+      if user_asset_other:
+        user_asset_other_list.gather()
     if not poverty_scale_get_income_limit(household_size=household_size, multiplier=1.25) is None:
       show_qualification_guess
     
@@ -552,7 +553,7 @@ code: |
       'user_income_employment_amount',
       'user_income_child_support_amount',
       'user_income_unemployment_amount',
-      'user_income_pension_amount')     
+      'user_income_pension_amount')
 ---
 id: What income did you receive in the last year
 question: |
@@ -1875,10 +1876,14 @@ attachments:
       - "user_dependents_adults": |
           % if user_has_dependents:
           ${ user_dependents_adults }
+          % else:
+          0
           % endif
       - "user_dependents_children": |
           % if user_has_dependents:
           ${ user_dependents_children }
+          % else:
+          0
           % endif
       - "benefits_ssi": ${ True if user_benefits['SSI'] == True else '' }
       - "benefits_aabd": ${ True if user_benefits['AABD'] == True else '' }
@@ -2136,6 +2141,7 @@ attachments:
           % if not user_asset_none:
           ${ user_asset_other_list[2].name.text }
           % endif
+      - "user_asset_none": ${ user_asset_none }
       - "substantial_hardship_explanation": ${ substantial_hardship_explanation }
       - "court_date_remote_cb": ${ True if court_choice == 'remote' else '' }
       - "court_date_in_person_cb": ${ True if court_choice == 'person' else '' }
