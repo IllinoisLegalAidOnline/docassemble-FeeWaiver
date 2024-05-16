@@ -1290,6 +1290,14 @@ generic object: ALIndividual
 question: |
   What is your contact information?
 subquestion: |
+  The court or other parties might need to contact you about this case.
+
+  **This information will appear on your court forms.**
+  
+  If you do not want to list a phone number on your forms, leave it blank.
+
+  If you have an email address, you must list it. Be sure to check your email daily, otherwise you may miss important information about your case.
+
   ${ collapse_template(contact_info_help) }  
 fields:  
   - Phone number: x.phone_number
@@ -1316,9 +1324,15 @@ validation code: |
 ---
 template: contact_info_help
 subject: |
-  **Why do I need to include this?**
+  **What if I don't want to list my email address?**
 content: |  
-  The court must be able to reach you, so you need to include some contact information.
+  If you do not want to enter your personal email address, you can create a new email account to get email about your case.
+  
+  To make a new email account try one of these email services:
+  
+  * [**Gmail**](https://accounts.google.com/SignUp)
+  * [**Outlook**](https://outlook.live.com/owa/?nlp=1&signup=1)
+  * [**Yahoo**](https://login.yahoo.com/account/create?.lang=en-US&.intl=us)
 ---
 id: substantial hardship
 question: |
@@ -1459,6 +1473,8 @@ question: |
  Does the court case have the words "**In re:**" in the name?
 subquestion: |
   Look at the name of the case at the top of the court papers. "In re" is often used in probate, bankruptcy, and some family law cases. For example, a probate case regarding Jane Doe’s estate might be called "In re: Estate of Jane Doe."
+  
+  **Note:** If the court papers list the names of people in the case, you can select **No**. For example, if the case title is "In re: Marriage of Julia Smith and Tony Smith," the names you already entered will be put on your forms. 
 fields:
   - no label: in_re_check
     datatype: yesnoradio
@@ -1466,6 +1482,8 @@ fields:
 id: in re label
 question: |
   What does it say after "**In re:**" on the court papers?
+subquestion: |
+  For example, the case could be called "In re: The Will of Elena Black."
 fields:
   - In re:: in_re_label
     maxlength: 50
@@ -1558,24 +1576,21 @@ subquestion: |
 
   If you do not add your **{e-signature}**, you must sign your paper form before you file it.
 
-  ${ collapse_template(fee_waiver_signature_help) }  
+  <div class="alert alert-info ilao-info" role="alert">
+    <h6 class="alert-heading">What it means to sign your forms</h6>
+    <p>By signing your <i>Application for Waiver of Court Fees</i>, you are certifying that:</p>
+    <p><ul>
+      <li>Everything on the forms is true and correct, and</li>
+      <li>You understand that making a false statement on the form is perjury, which can result in criminal penalties.</li>
+    </ul></p>
+  <p>See the <a href="https://www.ilga.gov/legislation/ilcs/documents/073500050k1-109.htm"><b>Code of Civil Procedure, 735 ILCS 5/1-109</b></a> for more information.</p>
+  </div>
 fields:
   - "Add e-signature?": e_signature
     datatype: yesnoradio
 terms:
   - "e-signature": |
       An e-signature is an electronic signature. It is a digital version of a signature that has the same effect as a hand-written signature. 
----
-template: fee_waiver_signature_help
-subject: |
-  **What does it mean to sign the *Application for Waiver of Court Fees*?**
-content: |  
-  By signing your Fee waiver Application, you are certifying that:
-  
-  * Everything on the forms is true and correct, and
-  * You understand that making a false statement on the form is perjury, which can result in criminal penalties.
-
-  See the [**Code of Civil Procedure, 735 ILCS 5/1-109**](https://www.ilga.gov/legislation/ilcs/documents/073500050k1-109.htm), for more information.
 ---
 id: signature choice
 decoration: file-signature
@@ -1629,11 +1644,11 @@ under: |
 ---
 id: court choice
 question: |
-  If the judge has questions about the Fee waiver Application, how do you want to attend court?
+  If the judge has questions about the Fee waiver application, how do you want to attend court?
 subquestion: |
   You might already have a court date scheduled.
   
-  Some courts may ask for a separate court date for more information about your Fee waiver Application. You might not get your choice, but you can say what you want on your Fee waiver Application.
+  Some courts may ask for a separate court date for more information about your Fee waiver application. You might not get your choice, but you can say what you want on your Fee waiver application.
 
   The Circuit Clerk should give you details about how to attend court. 
 fields:
@@ -1648,13 +1663,13 @@ continue button field: bring_docs
 question: |
   Be prepared
 subquestion: |
-  After you file your Fee waiver Application, the judge will review it. If they have questions, you may need to give more information or documentation. For example, you may be asked to show:
+  After you file your Fee waiver application, the judge will review it. If they have questions, you may need to give more information or documentation. For example, you may be asked to show:
   
   * Proof of public benefits received,
   * Proof of income, and
   * The value of any belongings.
   
-  If you have a court date for your Fee waiver Application, be sure to bring whatever documentation is requested.
+  If you have a court date for your Fee waiver application, be sure to bring whatever documentation is requested.
 ---
 id: get docs screen
 event: get_docs_screen
@@ -1700,29 +1715,38 @@ content: |
 ---
 objects:
   - IL_fee_waiver_Post_interview_instructions: ALDocument.using(title="Instructions", filename="instructions.pdf", has_addendum=False)
-  - IL_fee_waiver_attachment: ALDocument.using(title="Fee Waiver Application", filename="Fee waiver application.pdf", has_addendum=False)
-  - IL_fee_waiver_supplement: ALDocument.using(title="Winnebago Supplement", filename="Winnebago supplement.pdf", has_addendum=False)
+  - IL_fee_waiver_attachment: ALDocument.using(title="Fee waiver application", filename="Fee waiver application.pdf", has_addendum=False)
+  - IL_fee_waiver_supplement: ALDocument.using(title="Winnebago supplement", filename="Winnebago supplement.pdf", has_addendum=False)
+  - kankakee_supplement: ALDocument.using(title="Kankakee supplement", filename="Kankakee supplement.pdf", has_addendum=False)
   - IL_fee_waiver_order: ALDocument.using(title="Fee Waiver Order", filename="Fee waiver order.pdf", has_addendum=False)
 ---
 code: |
-  IL_fee_waiver_Post_interview_instructions.enabled = False
-  IL_fee_waiver_attachment.enabled = False
+  IL_fee_waiver_Post_interview_instructions.enabled = True
+  IL_fee_waiver_attachment.enabled = True
   IL_fee_waiver_supplement.enabled = False
-  IL_fee_waiver_order.enabled = False
+  kankakee_supplement.enabled = False
+  IL_fee_waiver_order.enabled = True
 
   if trial_court.address.county == "Winnebago":
-    IL_fee_waiver_Post_interview_instructions.enabled = True
-    IL_fee_waiver_attachment.enabled = True
     IL_fee_waiver_supplement.enabled = True
-    IL_fee_waiver_order.enabled = True
-  else:
-    IL_fee_waiver_Post_interview_instructions.enabled = True
-    IL_fee_waiver_attachment.enabled = True
-    IL_fee_waiver_order.enabled = True
+
+  if trial_court.address.county == "Kankakee":
+    kankakee_supplement.enabled = True
+
+# old logic before kankakee supplement
+#  if trial_court.address.county == "Winnebago":
+#    IL_fee_waiver_Post_interview_instructions.enabled = True
+#    IL_fee_waiver_attachment.enabled = True
+#    IL_fee_waiver_supplement.enabled = True
+#    IL_fee_waiver_order.enabled = True
+#  else:
+#    IL_fee_waiver_Post_interview_instructions.enabled = True
+#    IL_fee_waiver_attachment.enabled = True
+#    IL_fee_waiver_order.enabled = True
 ---
 objects:
-  - al_user_bundle: ALDocumentBundle.using(elements=[IL_fee_waiver_Post_interview_instructions, IL_fee_waiver_attachment, IL_fee_waiver_supplement, IL_fee_waiver_order], filename="IL_fee_waiver_package.pdf", title="All forms")
-  - al_court_bundle: ALDocumentBundle.using(elements=[IL_fee_waiver_attachment, IL_fee_waiver_supplement, IL_fee_waiver_order], filename="IL_fee_waiver_package.pdf", title="Download all forms")
+  - al_user_bundle: ALDocumentBundle.using(elements=[IL_fee_waiver_Post_interview_instructions, IL_fee_waiver_attachment, IL_fee_waiver_supplement, kankakee_supplement, IL_fee_waiver_order], filename="IL_fee_waiver_package.pdf", title="All forms")
+  - al_court_bundle: ALDocumentBundle.using(elements=[IL_fee_waiver_attachment, IL_fee_waiver_supplement, kankakee_supplement, IL_fee_waiver_order], filename="IL_fee_waiver_package.pdf", title="Download all forms")
 ---
 attachments:
   - name: Post interview instructions
@@ -1795,7 +1819,44 @@ attachments:
           % else:
           ${ "/s/ " + users[0].name.full(middle="full") if e_signature else ''  }
           % endif
-          
+
+  - name: Kankakee supplement
+    filename: kankakee_supplement     
+    variable name: kankakee_supplement[i]        
+    skip undefined: True
+    pdf template file: kankakee_supplement.pdf
+    editable: False
+    fields:
+      - "plaintiff": |
+          % if in_re_check:
+          ${ "In re: " + in_re_label }
+          % else:
+          % if plaintiffs.number() > 1:
+          ${ plaintiffs[0].name.full(middle="full") }, et al.
+          % else:
+          ${ plaintiffs[0].name.full(middle="full") }
+          % endif
+          % endif
+      - "defendant": |
+          % if in_re_check:
+          ${ "" }
+          % else:
+          % if defendants.number() > 1:
+          ${ defendants[0].name.full(middle="full") }, et al.
+          % else:
+          ${ defendants[0].name.full(middle="full") }      
+          % endif
+          % endif
+      - "docket_number": ${ docket_number }
+      - "signer_signature_slash_s": |
+          % if filing_basis != "filing_self":          
+          ${ "/s/ " + signer[0].name.full(middle="full") if e_signature else '' }
+          % else:
+          ${ "/s/ " + users[0].name.full(middle="full") if e_signature else ''  }
+          % endif
+      - "date": ${ today() if e_signature else '' }
+
+
   - name: IL fee waiver petition
     filename: IL_fee_waiver     
     variable name: IL_fee_waiver_attachment[i]        
