@@ -124,6 +124,11 @@ code: |
   	'started_interview': True, 
   	}
     
+  try:
+    stuff_to_snapshot['ip_address'] = device(ip=True)
+  except:
+    pass
+
   stuff_to_snapshot['zip'] = showifdef('users[0].address.zip')
 
   stuff_to_snapshot['downloaded_forms'] = showifdef('bring_docs')
@@ -1321,7 +1326,7 @@ subquestion: |
   
   If you do not want to list a phone number on your forms, leave it blank.
 
-  If you have an email address, you must list it. Be sure to check your email daily, otherwise you may miss important information about your case.
+  If you have an email address, you must list it. Be sure to check your email daily, otherwise you may miss important court documents or information about your case.
 
   ${ collapse_template(contact_info_help) }  
 fields:  
@@ -1493,9 +1498,9 @@ id: in re check
 question: |
  Does the court case have the words "**In re:**" in the name?
 subquestion: |
-  Look at the name of the case at the top of the court papers. "In re" is often used in probate, bankruptcy, and some family law cases. For example, a probate case regarding Jane Doe’s estate might be called "In re: Estate of Jane Doe."
+  Look at the name of the case at the top of the court papers. "In re" is often used in probate, guardianship, and some family law cases. For example, a probate case regarding Jane Doe’s estate might be called "In re: Estate of Jane Doe."
   
-  **Note:** If the court papers list the names of people in the case, you can select **No**. For example, if the case title is "In re: Marriage of Julia Smith and Tony Smith," the names you already entered will be put on your forms. 
+  **Note:** If the court papers say "In re:" but also list the names of people in the case, you can select **No**. For example, if the case title is "In re: Marriage of Julia Smith and Tony Smith," the names you already entered will be put on your forms. 
 fields:
   - no label: in_re_check
     datatype: yesnoradio
@@ -2697,7 +2702,9 @@ review:
       * In person
       % endif
 ---
+id: edit plaintiffs review screen
 continue button field: plaintiffs.revisit
+section: Court case info
 question: |
   Edit plaintiffs
 subquestion: |
@@ -2714,7 +2721,9 @@ edit:
   - name.first
 confirm: True
 ---
+id: edit defendants review screen
 continue button field: defendants.revisit
+section: Court case info
 question: |
   Edit defendants
 subquestion: |
@@ -2732,7 +2741,9 @@ edit:
 confirm: True
 
 ---
+id: edit users review screen
 continue button field: users.revisit
+section: Details about person asking for a fee waiver
 question: |
   Edit users
 subquestion: |
@@ -2758,7 +2769,9 @@ edit:
   - name.first
 confirm: True
 ---
+id: edit signer review screen
 continue button field: signer.revisit
+section: Details about person asking for a fee waiver
 question: |
   Edit signer
 subquestion: |
@@ -2778,7 +2791,8 @@ edit:
   - phone_number
 confirm: True
 ---
-id: other monthly income revisit
+id: other monthly income revisit review screen
+section: Income
 continue button field: user_income_other_list.revisit
 question: |
   Edit other income from last month
@@ -2801,8 +2815,9 @@ edit:
 delete buttons: True
 confirm: True
 ---
-id: other annual income revisit
+id: other annual income revisit review screen
 continue button field: user_annual_other_list.revisit
+section: Income
 question: |
   Edit other income from last 12 months
 subquestion: |
@@ -2824,7 +2839,8 @@ edit:
 delete buttons: True
 confirm: True
 ---
-id: other expenses revisit
+id: other expenses revisit review screen
+section: Expenses
 continue button field: user_expense_other_list.revisit
 question: |
   Edit other monthly expenses
@@ -2847,7 +2863,8 @@ edit:
 delete buttons: True
 confirm: True
 ---
-id: other assets revisit
+id: other assets revisit review screen
+section: Assets
 continue button field: user_asset_other_list.revisit
 question: |
   Edit other assets
