@@ -7,7 +7,6 @@ metadata:
 ---
 include:
   - docassemble.AssemblyLine:al_package.yml
-  #- docassemble.ALToolbox:phone-number-validation.yml  
   - docassemble.ILAO:ilao-interview-framework.yml
   - docassemble.ILAO:shared-basic-questions.yml
 ---
@@ -41,14 +40,12 @@ sections:
   - section_case_info: Court case info
   - section_about_you: Details about person asking for a fee waiver
   - section_download: Download
-  #- review_IL_fee_waiver: Review your answers
 ---
 mandatory: True
 code: |
   nav.set_section('section_intro')
   sees_nav_bar
   snapshot_start
-  #IL_fee_waiver_intro
   set_progress(5)
   how_to_use
   accept_terms
@@ -99,7 +96,6 @@ code: |
   set_progress(75)
   nav.set_section('section_about_you')
   substantial_hardship_explanation
-  #users[0].birth_year
   users[0].address.address
   if filing_basis == "filing_self":
     users[0].has_email_address
@@ -111,10 +107,10 @@ code: |
   e_signature
   court_choice
   bring_docs
-  #saw_signature_choice
 
   set_progress(100)
   nav.set_section('section_download')
+  forms_assembling
   snapshot_forms
   get_docs_screen
 ---
@@ -131,7 +127,7 @@ code: |
 
   stuff_to_snapshot['zip'] = showifdef('users[0].address.zip')
 
-  stuff_to_snapshot['downloaded_forms'] = showifdef('bring_docs')
+  stuff_to_snapshot['downloaded_forms'] = showifdef('forms_assembling')
   
   store_variables_snapshot(
   	data=stuff_to_snapshot, persistent=True
@@ -1700,6 +1696,17 @@ subquestion: |
   Ask your Circuit Clerk what they require. You can look up how to contact them on the [**Illinois Courts website**](https://www.illinoiscourts.gov/courts-directory/interactive-map/by-court-type).
   
   If you have a court date for your Fee waiver application, be sure to bring whatever documentation is requested.
+---
+id: forms assembling
+continue button field: forms_assembling
+question: |
+  Almost done
+subquestion: |
+  After you click **Next**, it may take a few moments to finish making your forms.
+  
+  ###### You do not need to refresh your screen. Hang in there!
+  
+  [NEWLINE]
 ---
 id: get docs screen
 event: get_docs_screen
