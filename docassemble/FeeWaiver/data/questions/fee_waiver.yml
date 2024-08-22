@@ -1717,7 +1717,7 @@ subquestion: |
 
   This program does not file your Fee waiver with the court. You will need to do this yourself. Learn about [**e-filing in Illinois**](https://www.illinoiscourts.gov/eservices/information-for-filers-without-lawyers).
 
-  ${ action_button_html(url_action('review_IL_fee_waiver'), label=':edit: Make changes', color='success', size="md") }
+  ${ action_button_html(url_action('review_answers'), label=':edit: Make changes', color='success', size="md") }
   
   ${ al_user_bundle.download_list_html() }
 
@@ -1736,7 +1736,7 @@ under: |
   % endif 
 
   &nbsp;
-  ${ action_button_html(interview_url(i="docassemble.ILAO:feedback.yml", easy_form_interview=ilao_easy_form_url, easy_form_title=ilao_easy_form_title, easy_form_page=user_info().question_id, easy_form_variable=user_info().variable, local=False,reset=1), label=':comment: Was this program helpful?', color="#181c36", size="md", new_window=True) }
+  ${ action_button_html(interview_url(i="docassemble.ILAO:feedback.yml", easy_form_interview=ilao_easy_form_url, easy_form_title=ilao_easy_form_title, easy_form_page=current_context().question_id, easy_form_variable=current_context().variable, local=False,reset=1), label=':comment: Was this program helpful?', color="#181c36", size="md", new_window=True) }
 
 ---
 generic object: ALDocumentBundle
@@ -1755,7 +1755,7 @@ objects:
   - IL_fee_waiver_attachment: ALDocument.using(title="Fee waiver application", filename="Fee waiver application.pdf", has_addendum=False)
   - IL_fee_waiver_supplement: ALDocument.using(title="Winnebago supplement", filename="Winnebago supplement.pdf", has_addendum=False)
   - kankakee_supplement: ALDocument.using(title="Kankakee supplement", filename="Kankakee supplement.pdf", has_addendum=False)
-  - IL_fee_waiver_order: ALDocument.using(title="Fee Waiver Order", filename="Fee waiver order.pdf", has_addendum=False)
+  - IL_fee_waiver_order: ALDocument.using(title="Fee waiver order", filename="Fee waiver order.pdf", has_addendum=False)
 ---
 code: |
   IL_fee_waiver_Post_interview_instructions.enabled = True
@@ -2249,7 +2249,7 @@ attachments:
       #    % endif
 ---
 id: IL fee waiver review screen
-event: review_IL_fee_waiver
+event: review_answers
 question: |
   Review screen
 subquestion: |
