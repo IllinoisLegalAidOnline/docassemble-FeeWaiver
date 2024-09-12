@@ -1285,6 +1285,9 @@ fields:
       is: filing_on_behalf_of        
   - Attorney number (if any): signer_attorney_number      
     required: False
+    help: |
+      If you are an attorney licensed in Illinois, you can enter your number if filing on behalf of another person. Some jurisdictions like Cook or DuPage County require a firm or an individual attorney number.
+    maxlength: 20    
     show if: 
       variable: filing_basis
       is: filing_on_behalf_of
@@ -1382,9 +1385,11 @@ subquestion: |
 fields:
   - no label: substantial_hardship_explanation
     datatype: area
-    rows: 5
-    maxlength: 500
+    rows: 13
+    maxlength: 800
     required: False
+  - note: |
+      The form has room for about 800 characters including spaces.
 ---
 id: any other users
 question: |
@@ -1754,7 +1759,7 @@ objects:
   - IL_fee_waiver_Post_interview_instructions: ALDocument.using(title="Instructions", filename="instructions.pdf", has_addendum=False)
   - IL_fee_waiver_attachment: ALDocument.using(title="Fee waiver application", filename="Fee waiver application.pdf", has_addendum=False)
   - IL_fee_waiver_supplement: ALDocument.using(title="Winnebago supplement", filename="Winnebago supplement.pdf", has_addendum=False)
-  - kankakee_supplement: ALDocument.using(title="Kankakee supplement", filename="Kankakee supplement.pdf", has_addendum=False)
+  - kankakee_supplement: ALDocument.using(title="Kankakee supplement", filename="Kankakee supplement.pdf", has_addendum=False, enabled=False)
   - IL_fee_waiver_order: ALDocument.using(title="Fee waiver order", filename="Fee waiver order.pdf", has_addendum=False)
 ---
 code: |
@@ -1767,19 +1772,7 @@ code: |
   if trial_court.address.county == "Winnebago":
     IL_fee_waiver_supplement.enabled = True
 
-  if trial_court.address.county == "Kankakee":
-    kankakee_supplement.enabled = True
-
-# old logic before kankakee supplement
-#  if trial_court.address.county == "Winnebago":
-#    IL_fee_waiver_Post_interview_instructions.enabled = True
-#    IL_fee_waiver_attachment.enabled = True
-#    IL_fee_waiver_supplement.enabled = True
-#    IL_fee_waiver_order.enabled = True
-#  else:
-#    IL_fee_waiver_Post_interview_instructions.enabled = True
-#    IL_fee_waiver_attachment.enabled = True
-#    IL_fee_waiver_order.enabled = True
+# kankakee supplement removed sep 2024. Code & template retained for backwards compatibility
 ---
 objects:
   - al_user_bundle: ALDocumentBundle.using(elements=[IL_fee_waiver_Post_interview_instructions, IL_fee_waiver_attachment, IL_fee_waiver_supplement, kankakee_supplement, IL_fee_waiver_order], filename="IL_fee_waiver_package.pdf", title="All forms")
@@ -1892,7 +1885,6 @@ attachments:
           ${ "/s/ " + users[0].name.full(middle="full") if e_signature else ''  }
           % endif
       - "date": ${ today() if e_signature else '' }
-
 
   - name: IL fee waiver petition
     filename: IL_fee_waiver     
