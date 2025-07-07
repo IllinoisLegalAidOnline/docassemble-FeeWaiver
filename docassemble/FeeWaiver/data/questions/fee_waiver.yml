@@ -230,7 +230,7 @@ continue button field: whats_next
 question: |
   After you finish this program
 subquestion: |
-  After you download your ${ form_name }, you must file it with the court. This program does not file your ${ form_name } for you.
+  After you download your ${ form_name }, you must file it with the court. This program **does not file** your ${ form_name } for you.
   
   **Note:** You can file your ${ form_name } at any time during your court case. It is usually done when a person files their first forms in a case. That way they might have all of the court fees in a case waived.
   
@@ -383,9 +383,9 @@ id: user qualifies benefits
 continue button field: user_qualifies_interstitial
 question: |
   % if filing_basis == "filing_self":
-  You should qualify
+  We think you should qualify
   % else:
-  ${ users[0].familiar() } should qualify
+  We think ${ users[0].familiar() } should qualify
   % endif
 subquestion: |
   % if filing_basis == "filing_self": 
@@ -1219,7 +1219,19 @@ subquestion: |
   per month).
   
   The judge will also consider ${ your_or_their } total assets of ${ currency(user_asset_total) }
-  and ${ your_or_their } total monthly expenses of ${ currency(user_expense_total) }. 
+  and ${ your_or_their } total monthly expenses of ${ currency(user_expense_total) }.
+
+  % if filing_basis == "filing_self":
+  <div class="alert alert-info ilao-info" role="alert">
+    <h6 class="alert-heading">Explain other reasons why you need a fee waiver</h6>
+    <p>You can tell the judge about other reasons why it is hard for you to pay for court costs on another screen. This will be added to your Fee waiver application.</p>
+  </div>
+  % else:
+  <div class="alert alert-info ilao-info" role="alert">
+    <h6 class="alert-heading">Explain other reasons why ${ users[0].familiar() } needs a fee waiver</h6>
+    <p>You can tell the judge about other reasons why it is hard for ${ users[0].familiar() } to pay for court costs on another screen. This will be added to their Fee waiver application.</p>
+  </div>
+  % endif
   
   #### A judge makes the final decision
   This website cannot tell you if ${ you_or_they } qualify for sure. The judge will
@@ -1232,8 +1244,8 @@ template: other_fee_waiver_considerations
 subject: |
   **What else the judge will consider**
 content: |  
-  The judge will look at all of the information that you provided on this
-  form to decide if ${ you_or_they } qualify. For example, the judge will compare ${ your_or_their }
+  The judge will look at all of the information that you provided on the Fee waiver application
+  to decide if ${ you_or_they } qualify. For example, the judge will compare ${ your_or_their }
   assets and expenses. They will also read any additional explanation that you
   decide to provide.
   
@@ -1243,11 +1255,8 @@ content: |
   counted are set by law: specifically, 
   [**735 ILCS 5/12-901**](https://www.ilga.gov/legislation/ilcs/fulltext.asp?DocName=073500050K12-1001)
   and [**735 ILCS 5/12-1001**](https://www.ilga.gov/legislation/ilcs/fulltext.asp?DocName=073500050K12-901).
-  
-  
+    
   The judge may decide that ${ you_or_they } qualify for a partial reduction in court fees even if ${ you_or_they } do not qualify for a full waiver.
-  
-  
 ---
 id: Who is filing this fee waiver
 question: |
@@ -1389,7 +1398,7 @@ fields:
     maxlength: 800
     required: False
   - note: |
-      The form has room for about 800 characters including spaces.
+      The form has room for about **800 characters** including spaces.
 ---
 id: any other users
 question: |
@@ -1596,7 +1605,7 @@ question: |
   Do you want to add your e-signature to your ${ form_name }?
 subquestion: |
   % if filing_basis != "filing_self":          
-  This program can put "**/s/ ${signer[0].name.full(middle="full")}**" where you would sign your name. The court will accept this as your signature.
+  This program can put "**/s/ ${signer[0].name_full()}**" where you would sign your name. The court will accept this as your signature.
   % else:
   This program can put "**/s/ ${users[0].name.full(middle='full')}**" where you would sign your name. The court will accept this as your signature.
   % endif
@@ -1664,9 +1673,9 @@ question: |
 signature: users[0].signature
 under: |
   % if filing_basis == "filing_self":
-    ${ users[0].name.full(middle="full") }
+    ${ users[0].name_full() }
   % else:
-    ${ signer[0].name.full(middle="full") }
+    ${ signer[0].name_full() }
   % endif
 ---
 id: court choice
@@ -1720,7 +1729,7 @@ question: |
 subquestion: |
   Your forms are ready. View and download your forms below. Click **Make changes** to fix any mistakes.
 
-  This program does not file your Fee waiver with the court. You will need to do this yourself. Learn about [**e-filing in Illinois**](https://www.illinoiscourts.gov/eservices/information-for-filers-without-lawyers).
+  This program **does not file** your Fee waiver with the court. You will need to do this yourself. Learn about [**e-filing in Illinois**](https://www.illinoiscourts.gov/eservices/information-for-filers-without-lawyers).
 
   ${ action_button_html(url_action('review_answers'), label=':edit: Make changes', color='success', size="md") }
   
@@ -1730,7 +1739,7 @@ subquestion: |
 
   ${ al_user_bundle.send_button_html(show_editable_checkbox=False) }
 
-  **Note:** This program does not file your Fee waiver with the court. Learn about [**e-filing in Illinois**](https://www.illinoiscourts.gov/eservices/information-for-filers-without-lawyers).
+  **Note:** This program **does not file** your Fee waiver with the court. Learn about [**e-filing in Illinois**](https://www.illinoiscourts.gov/eservices/information-for-filers-without-lawyers).
   
   Thank you for using ILAO Easy Forms!
 #buttons:
@@ -1800,9 +1809,9 @@ attachments:
           ${ in_re_label }
           % else:
           % if plaintiffs.number() > 1:
-          ${ plaintiffs[0].name.full(middle="full") }, et al.
+          ${ plaintiffs[0].name_full() }, et al.
           % else:
-          ${ plaintiffs[0].name.full(middle="full") }
+          ${ plaintiffs[0].name_full() }
           % endif
           % endif
       - "defendant": |
@@ -1810,15 +1819,15 @@ attachments:
           ${ "" }
           % else:
           % if defendants.number() > 1:
-          ${ defendants[0].name.full(middle="full") }, et al.
+          ${ defendants[0].name_full() }, et al.
           % else:
-          ${ defendants[0].name.full(middle="full") }      
+          ${ defendants[0].name_full() }      
           % endif
           % endif
       - "docket_number": ${ docket_number }
       - "docket_number__1": ${ docket_number }
       - "docket_number__2": ${ docket_number }
-      - "user_name_full": ${ users[0].name.full(middle="full") }
+      - "user_name_full": ${ users[0].name_full() }
 
   - name: IL fee waiver supplement
     filename: winnebago_supplement     
@@ -1833,9 +1842,9 @@ attachments:
       - "docket_number": ${ docket_number }
       - "signer_name_full": |
           % if filing_basis != "filing_self":
-          ${ signer[0].name.full(middle="full") }
+          ${ signer[0].name_full() }
           % else:
-          ${ users[0].name.full(middle="full") }
+          ${ users[0].name_full() }
           % endif
       - "signer_phone_number": |
           % if filing_basis != "filing_self":
@@ -1845,9 +1854,9 @@ attachments:
           % endif
       - "signer_signature_slash_s": |
           % if filing_basis != "filing_self":          
-          ${ "/s/ " + signer[0].name.full(middle="full") if e_signature else '' }
+          ${ "/s/ " + signer[0].name_full() if e_signature else '' }
           % else:
-          ${ "/s/ " + users[0].name.full(middle="full") if e_signature else ''  }
+          ${ "/s/ " + users[0].name_full() if e_signature else ''  }
           % endif
 
   - name: Kankakee supplement
@@ -1862,9 +1871,9 @@ attachments:
           ${ "In re: " + in_re_label }
           % else:
           % if plaintiffs.number() > 1:
-          ${ plaintiffs[0].name.full(middle="full") }, et al.
+          ${ plaintiffs[0].name_full() }, et al.
           % else:
-          ${ plaintiffs[0].name.full(middle="full") }
+          ${ plaintiffs[0].name_full() }
           % endif
           % endif
       - "defendant": |
@@ -1872,17 +1881,17 @@ attachments:
           ${ "" }
           % else:
           % if defendants.number() > 1:
-          ${ defendants[0].name.full(middle="full") }, et al.
+          ${ defendants[0].name_full() }, et al.
           % else:
-          ${ defendants[0].name.full(middle="full") }      
+          ${ defendants[0].name_full() }      
           % endif
           % endif
       - "docket_number": ${ docket_number }
       - "signer_signature_slash_s": |
           % if filing_basis != "filing_self":          
-          ${ "/s/ " + signer[0].name.full(middle="full") if e_signature else '' }
+          ${ "/s/ " + signer[0].name_full() if e_signature else '' }
           % else:
-          ${ "/s/ " + users[0].name.full(middle="full") if e_signature else ''  }
+          ${ "/s/ " + users[0].name_full() if e_signature else ''  }
           % endif
       - "date": ${ today() if e_signature else '' }
 
@@ -1899,9 +1908,9 @@ attachments:
           ${ in_re_label }
           % else:
           % if plaintiffs.number() > 1:
-          ${ plaintiffs[0].name.full(middle="full") }, et al.
+          ${ plaintiffs[0].name_full() }, et al.
           % else:
-          ${ plaintiffs[0].name.full(middle="full") }
+          ${ plaintiffs[0].name_full() }
           % endif
           % endif
       - "defendant": |
@@ -1909,9 +1918,9 @@ attachments:
           ${ "" }
           % else:
           % if defendants.number() > 1:
-          ${ defendants[0].name.full(middle="full") }, et al.
+          ${ defendants[0].name_full() }, et al.
           % else:
-          ${ defendants[0].name.full(middle="full") }      
+          ${ defendants[0].name_full() }      
           % endif
           % endif
       - "docket_number": ${ docket_number }
@@ -1920,20 +1929,20 @@ attachments:
       - "docket_number__3": ${ docket_number }
       - "filing_self_cb": ${ True if filing_basis == "filing_self" else ""}
       - "filing_obo_cb": ${ True if filing_basis != "filing_self" else ""}
-      - "user_name_full": ${ users[0].name.full(middle="full") }
+      - "user_name_full": ${ users[0].name_full() }
       - "user_address_one_line": ${ users[0].address.on_one_line(bare=True) }
       - "signer_name_full": |
           % if filing_basis != "filing_self":
-          ${ signer[0].name.full(middle="full") }
+          ${ signer[0].name_full() }
           % else:
-          ${ users[0].name.full(middle="full") }
+          ${ users[0].name_full() }
           % endif
       - "user_address_one_line__2": ${ users[0].address.on_one_line(bare=True) }
       - "signer_signature_no_slash": |
           % if filing_basis != "filing_self":          
-          ${ signer[0].name.full(middle="full") if e_signature else '' }
+          ${ signer[0].name_full() if e_signature else '' }
           % else:
-          ${ users[0].name.full(middle="full") if e_signature else ''  }
+          ${ users[0].name_full() if e_signature else ''  }
           % endif
       - "signer_email": |
           % if filing_basis != "filing_self":
@@ -2583,14 +2592,14 @@ review:
       **Plaintiffs / Petitioners:**
 
       % for item in plaintiffs:
-        * ${ item.name.full(middle="full") }
+        * ${ item.name_full() }
       % endfor
   - Edit: defendants.revisit
     button: |
       **Defendants / Respondents:**
 
       % for item in defendants:
-        * ${ item.name.full(middle="full") }
+        * ${ item.name_full() }
       % endfor
   - Edit: in_re_check
     button: |
@@ -2618,12 +2627,12 @@ review:
   - Edit: users[0].name.first
     button: |
       **Your name:**
-      ${ users[0].name.full(middle="full") }
+      ${ users[0].name_full() }
     show if: filing_basis == "filing_self"
   - Edit: users[0].name.first
     button: |
       **Name of person you are filing for:**
-      ${ users[0].name.full(middle="full") }
+      ${ users[0].name_full() }
     show if: filing_basis != "filing_self"
   - Edit: users[0].address.address
     button: |
@@ -2636,7 +2645,7 @@ review:
   - Edit: signer[0].name.first
     button: |
       **Your name:**
-      ${ signer[0].name.full(middle="full") }
+      ${ signer[0].name_full() }
     show if: filing_basis != "filing_self"
   - Edit: substantial_hardship_explanation
     button: |
@@ -2715,7 +2724,7 @@ table: plaintiffs.table
 rows: plaintiffs
 columns:
   - name: |
-      row_item.name.full(middle="full") if defined("row_item.name.first") else ""
+      row_item.name_full() if defined("row_item.name.first") else ""
 edit:
   - name.first
 confirm: True
@@ -2734,7 +2743,7 @@ table: defendants.table
 rows: defendants
 columns:
   - name: |
-      row_item.name.full(middle="full") if defined("row_item.name.first") else ""
+      row_item.name_full() if defined("row_item.name.first") else ""
 edit:
   - name.first
 confirm: True
@@ -2754,7 +2763,7 @@ table: users.table
 rows: users
 columns:
   - Name: |
-      row_item.name.full(middle="full") if defined("row_item.name.first") else ""
+      row_item.name_full() if defined("row_item.name.first") else ""
 edit:
   - name.first
 confirm: True
@@ -2763,7 +2772,7 @@ table: other_parties.table
 rows: other_parties
 columns:
   - Name: |
-      row_item.name.full(middle="full") if defined("row_item.name.first") else ""
+      row_item.name_full() if defined("row_item.name.first") else ""
 edit:
   - name.first
 confirm: True
@@ -3256,14 +3265,14 @@ review:
       **Plaintiffs / Petitioners:**
 
       % for item in plaintiffs:
-        * ${ item.name.full(middle="full") }
+        * ${ item.name_full() }
       % endfor
   - Edit: defendants.revisit
     button: |
       **Defendants / Respondents:**
 
       % for item in defendants:
-        * ${ item.name.full(middle="full") }
+        * ${ item.name_full() }
       % endfor
   - Edit: in_re_check
     button: |
@@ -3301,12 +3310,12 @@ review:
   - Edit: users[0].name.first
     button: |
       **Your name:**
-      ${ users[0].name.full(middle="full") }
+      ${ users[0].name_full() }
     show if: filing_basis == "filing_self"
   - Edit: users[0].name.first
     button: |
       **Name of person you are filing for:**
-      ${ users[0].name.full(middle="full") }
+      ${ users[0].name_full() }
     show if: filing_basis != "filing_self"
   - Edit: substantial_hardship_explanation
     button: |
@@ -3335,7 +3344,7 @@ review:
   - Edit: signer[0].name.first
     button: |
       **Your name:**
-      ${ signer[0].name.full(middle="full") }
+      ${ signer[0].name_full() }
     show if: filing_basis != "filing_self"
   - Edit: signer[0].address.address
     button: |
