@@ -1413,7 +1413,7 @@ question: |
   % endif
 subquestion: |
   % if len(users.elements) > 1:  
-  So far you have told us about ${comma_and_list(users.complete_elements().full_names())}.
+  So far you have told us about ${comma_and_list(users.full_names())}.
   % endif  
 fields:
   - no label: users.there_is_another
@@ -1479,7 +1479,7 @@ question: |
   % endif
 subquestion: |
   % if len(other_parties.elements) >= 1:  
-  So far you have told us about ${comma_and_list(other_parties.complete_elements().full_names())}.
+  So far you have told us about ${comma_and_list(other_parties.full_names())}.
   % endif
 fields:
   - no label: other_parties.there_is_another
