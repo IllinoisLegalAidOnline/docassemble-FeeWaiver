@@ -1404,7 +1404,7 @@ question: |
   % endif
 subquestion: |
   % if len(users.elements) > 1:  
-  So far you have told us about ${users.full_names()}.
+  So far you have told us about ${comma_and_list(users.full_names())}.
   % endif  
 fields:
   - no label: users.there_is_another
@@ -1469,8 +1469,8 @@ question: |
   Is there another **plaintiff** or **petitioner** in this case?
   % endif
 subquestion: |
-  % if len(other_parties.elements) >= 1:  
-  So far you have told us about ${other_parties.full_names()}.
+  % if len(other_parties.elements) >= 1:
+  So far you have told us about ${comma_and_list(other_parties.full_names())}.
   % endif
 fields:
   - no label: other_parties.there_is_another
