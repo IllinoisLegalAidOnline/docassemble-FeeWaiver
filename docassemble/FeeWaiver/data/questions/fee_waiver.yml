@@ -2204,7 +2204,10 @@ attachments:
           ${ user_expense_other_list[2].name.text }
           % endif
       - "user_expense_none": ${ user_expense_none }
-      - "user_expense_total": ${ thousands(user_expense_total, show_decimals=True) }
+      - "user_expense_total": |
+          % if not user_expense_none:
+          ${ thousands(user_expense_total, show_decimals=True) }
+          % endif
       - "user_asset_bank_account": ${ user_asset_bank_account }
       - "user_asset_bank_account_amount": ${ thousands(user_asset_bank_account_amount, show_decimals=True) }
       - "user_asset_home": ${ user_asset_home }
