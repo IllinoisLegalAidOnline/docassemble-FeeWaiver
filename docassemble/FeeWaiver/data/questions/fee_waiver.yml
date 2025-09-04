@@ -100,8 +100,8 @@ code: |
   if filing_basis == "filing_self":
     users[0].has_email_address
   if filing_basis != "filing_self":
-    signer[0].address.address
     signer[0].has_email_address
+    #signer[0].address.address
 
   set_progress(90)
   e_signature
@@ -147,11 +147,9 @@ continue button field: case_county
 question: |
   In which county was this case filed?
 subquestion: |
-  % if user_ask_role == "plaintiff":
-  If you are starting a new case, select the county where you will file.
-  % endif
+  If this is for a new case, select the county where it will be filed.
 fields:
-  - no label: trial_court_index
+  - County: trial_court_index
     code: |
       court_county_lookup()
 ---
@@ -176,10 +174,12 @@ id: welcome
 question: |
   Fee waiver
 subquestion: |
-  Welcome to Illinois Legal Aid Online's **Fee waiver** Easy Form. This program creates a form that asks to participate in a court case for free or at a reduced cost.
+  Welcome to Illinois Legal Aid Online's **Fee waiver** Easy Form.
   
-  Learn about [**filing court papers for 
-  free**](https://www.illinoislegalaid.org/legal-information/filing-court-papers-free).
+  This program creates a form that asks to participate in a court case for free or at a reduced cost.
+  
+  To learn more, read ILAO's article about [**filing court papers for 
+  free**](https://www.illinoislegalaid.org/node/32226).
 field: sees_nav_bar
 ---
 id: your name
@@ -213,7 +213,7 @@ subquestion: |
 
   You will also need to know information about the court case for which you are requesting a fee waiver. You can find this information on other court papers you have about this case. 
 
-  Set aside 10 to 15 minutes to finish this program. You can log in and save your work to return to later. 
+  Set aside 10 to 15 minutes to finish this program. You can log in and save your work to continue later. 
  
   ${ collapse_template(help_example) }  
 
@@ -1292,14 +1292,14 @@ fields:
     show if: 
       variable: filing_basis
       is: filing_on_behalf_of        
-  - Attorney number (if any): signer_attorney_number      
-    required: False
-    help: |
-      If you are an attorney licensed in Illinois, you can enter your number if filing on behalf of another person. Some jurisdictions like Cook or DuPage County require a firm or an individual attorney number.
-    maxlength: 20    
-    show if: 
-      variable: filing_basis
-      is: filing_on_behalf_of
+#  - Attorney number (if any): signer_attorney_number      
+#    required: False
+#    help: |
+#      If you are an attorney licensed in Illinois, you can enter your number if filing on behalf of another person. Some jurisdictions like Cook or DuPage County require a firm or an individual attorney number.
+#    maxlength: 20    
+#    show if: 
+#      variable: filing_basis
+#      is: filing_on_behalf_of
   #- How are you related to the person you are filing for?: relationship_to_minor
   #  maxlength: 33
   #  show if: 
@@ -1394,11 +1394,11 @@ subquestion: |
 fields:
   - no label: substantial_hardship_explanation
     datatype: area
-    rows: 13
-    maxlength: 800
+    rows: 16
+    maxlength: 1000
     required: False
   - note: |
-      The form has room for about **800 characters** including spaces.
+      The form has room for about **1,000 characters** including spaces.
 ---
 id: any other users
 question: |
@@ -1531,11 +1531,12 @@ sets:
   - users[0].address.city
   - users[0].address.zip
 question: |
-  % if filing_basis == "filing_self":
-    What is your address?
-  % else:
-    What is ${ users[0].familiar() }'s address?
-  % endif
+  What is your address?
+subquestion: |
+  % if filing_basis != "filing_self":
+    **Note:** Enter your own address here, not ${ users[0].familiar() }'s address.
+  % endif  
+
 fields:
   - Street address: users[0].address.address
     address autocomplete: True
@@ -1574,11 +1575,11 @@ question: |
 subquestion: |
   The case number will be listed on ${ your_or_obo_possessive } court papers. The Circuit Clerk gives each case a number when it is filed.
   
-  If nothing has been filed yet, select **I don't know the case number**.
+  If nothing has been filed yet, select **I don't know the case number.**
 
   ${ collapse_template(case_number_help) }  
 fields:
-  - I don't know the case number: dont_know_docket_number
+  - "I don't know the case number.": dont_know_docket_number
     datatype: yesno    
   - Case number: docket_number
     maxlength: 20
@@ -1616,8 +1617,8 @@ subquestion: |
     <h6 class="alert-heading">What it means to sign your forms</h6>
     <p>By signing your <i>Application for Waiver of Court Fees</i>, you are certifying that:</p>
     <p><ul>
-      <li>Everything on the form is true and correct, and</li>
-      <li>You understand that making a false statement on the form is perjury, which can result in criminal penalties.</li>
+      <li>Everything on the form is true and correct, or you have been informed or believe it to be true and correct, and</li>
+      <li>You understand that making a false statement on the form is perjury and has penalties provided by law.</li>
     </ul></p>
   <p>See the <a href="https://www.ilga.gov/legislation/ilcs/documents/073500050k1-109.htm"><b>Code of Civil Procedure, 735 ILCS 5/1-109</b></a> for more information.</p>
   </div>
@@ -1934,7 +1935,7 @@ attachments:
       - "filing_self_cb": ${ True if filing_basis == "filing_self" else ""}
       - "filing_obo_cb": ${ True if filing_basis != "filing_self" else ""}
       - "user_name_full": ${ users[0].name_full() }
-      - "user_address_one_line": ${ users[0].address.on_one_line(bare=True) }
+      # - "user_address_one_line": ${ users[0].address.on_one_line(bare=True) }
       - "signer_name_full": |
           % if filing_basis != "filing_self":
           ${ signer[0].name_full() }
@@ -1972,10 +1973,10 @@ attachments:
           % else:
           ${ users[0].address.line_one(bare=True) }
           % endif
-      - "signer_attorney_number": |
-          % if filing_basis != "filing_self" and signer_attorney_number:          
-          ${ signer_attorney_number }
-          % endif
+#      - "signer_attorney_number": |
+#          % if filing_basis != "filing_self" and signer_attorney_number:          
+#          ${ signer_attorney_number }
+#          % endif
       - "user_dependents_adults": |
           % if user_has_dependents:
           ${ user_dependents_adults }
@@ -2248,6 +2249,7 @@ attachments:
       - "substantial_hardship_explanation": ${ substantial_hardship_explanation }
       - "court_date_remote_cb": ${ True if court_choice == 'remote' else '' }
       - "court_date_in_person_cb": ${ True if court_choice == 'person' else '' }
+      - "form_for_self": ${ True }
       #- "relationship_to_minor": |
       #    % if filing_basis != "filing_self":
       #    ${ relationship_to_minor  }
@@ -2655,11 +2657,11 @@ review:
     button: |
       **Substantial hardship because**:
       > ${ substantial_hardship_explanation }
-  - Edit: signer[0].address.address
-    button: |
-      **Your address:**
-      ${ signer[0].address.on_one_line(bare=True) }
-    show if: filing_basis != "filing_self"
+#  - Edit: signer[0].address.address
+#    button: |
+#      **Your address:**
+#      ${ signer[0].address.on_one_line(bare=True) }
+#    show if: filing_basis != "filing_self"
   - Edit: signer[0].has_email_address
     button: |
       **Your phone number**:
@@ -3350,11 +3352,11 @@ review:
       **Your name:**
       ${ signer[0].name_full() }
     show if: filing_basis != "filing_self"
-  - Edit: signer[0].address.address
-    button: |
-      **Your address:**
-      ${ signer[0].address.on_one_line(bare=True) }
-    show if: filing_basis != "filing_self"
+#  - Edit: signer[0].address.address
+#    button: |
+#      **Your address:**
+#      ${ signer[0].address.on_one_line(bare=True) }
+#    show if: filing_basis != "filing_self"
   - Edit: signer[0].has_email_address
     button: |
       **Your phone number**:
