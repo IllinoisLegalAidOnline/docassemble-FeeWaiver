@@ -1431,7 +1431,7 @@ subquestion: |
 
   % if filing_basis == "filing_self":
   <div class="alert alert-info ilao-info" role="alert">
-    <h6 class="alert-heading">Explain other reasons why you need an ${ form_name }</h6>
+    <h6 class="alert-heading">Explain other reasons why you need a ${ form_name }</h6>
     <p>You can tell the judge about other reasons why it is hard for you to pay for court costs on another screen. This will be added to your ${ form_name } application.</p>
   </div>
   % else:
