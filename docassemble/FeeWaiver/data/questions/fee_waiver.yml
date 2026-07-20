@@ -176,7 +176,7 @@ question: |
 subquestion: |
   Welcome to Illinois Legal Aid Online's **Fee waiver** Easy Form.
   
-  This program creates a form that asks to participate in a court case for free or at a reduced cost.
+  This program makes an *Application For Waiver of Court Fees* that asks the court to participate in a court case for free or at a reduced cost.
   
   To learn more, read ILAO's article about [**court fees and fee waivers**](https://www.illinoislegalaid.org/node/189246).
 field: sees_nav_bar
@@ -231,9 +231,9 @@ question: |
 subquestion: |
   After you download your ${ form_name }, you must file it with the court. This program **does not file** your ${ form_name } for you.
   
-  **Note:** You can file your ${ form_name } at any time during your court case. It is usually done when a person files their first forms in a case. That way they might have all of the court fees in a case waived.
+  **Note:** You can file your ${ form_name } at any time during your court case. Most people file it when they submit their first forms in case. That way, if it is approved, all of the court fees in the case could be waived or reduced.
   
-  To learn more, read the "How to Request a Fee Waiver (Civil)" instructions you can download at the end of this program. 
+  To learn more, download and read the "How to Request a Fee Waiver (Civil)" instructions at the end of this program.
 ---
 template: get_legal_help
 subject: |
@@ -272,7 +272,7 @@ subquestion: |
   Check any benefits that ${ users[0].familiar() } currently receives.
   % endif
 
-  **Note:** Medicaid works differently than these benefits. If ${you_or_they} are on Medicaid and want to include this in ${your_or_their} fee waiver application, you can explain it on another screen.
+  **Note:** Medicaid works differently than these benefits. If ${you_or_they} are on Medicaid and want to include this in ${your_or_their} ${ form_name } application, you can explain it elsewhere. Look for the **Other reasons why paying court fees would be hard** screen.
 fields:
   - no label: user_benefits
     datatype: checkboxes
@@ -307,7 +307,7 @@ subquestion: |
   * SNAP - Supplemental Nutrition Assitance Program (Food Stamps)
   * General Assistance Program (GA), Transitional Assistance, or State Children and Family Assistance
 
-  **Note:** Medicaid works differently than these benefits. If ${you_or_obo_name} applied for Medicaid and ${"want" if filing_basis == "filing_self" else "wants"} to include this in ${your_or_their} fee waiver application, you can explain it on another screen.
+  **Note:** Medicaid works differently than these benefits. If ${you_or_obo_name} applied for Medicaid and ${"want" if filing_basis == "filing_self" else "wants"} to include this in ${your_or_their} ${ form_name } application, you can explain it elsewhere. Look for the **Other reasons why paying court fees would be hard** screen.
 fields:
   - no label: user_applied_for_benefits
     datatype: yesnoradio
@@ -395,9 +395,9 @@ question: |
   % endif
 subquestion: |
   % if filing_basis == "filing_self": 
-  Because you currently receive public benefits, you should qualify for 100% waiver of fees for your civil case.
+  Because you currently receive public benefits, you should qualify to have all fees waived in this civil case.
   % else:
-  Because ${ users[0].familiar() } currently receives public benefits, they should qualify for a 100% waiver of fees in this civil case.
+  Because ${ users[0].familiar() } currently receives public benefits, they should qualify to have all fees waived in this civil case.
   % endif
 ---
 id: How many dependents do you have
@@ -1416,7 +1416,7 @@ continue button field: show_qualification_guess
 question: |
   How to qualify for a waiver
 subquestion: |
-  The judge will consider ${ your_or_their } income, assets, and expenses.
+  The judge will consider ${ your_or_obo_possessive } income, assets, and expenses.
   
   You said ${ your_or_their } income in the past month was 
   ${ currency(get_income_total()) }, and ${ your_or_their} income over the last 12 months was 
@@ -1456,8 +1456,7 @@ content: |
   assets and expenses. They will also read any additional explanation that you
   decide to provide.
   
-  Some of ${ your_or_their } assets will not be counted. For example: the value of ${ your_or_their } car,
-  up to $3,600, is not counted. A person can have up to $4,000 in other assets,
+  Some of ${ your_or_their } assets will not be counted. For example, up to $3,600 of the value of ${ your_or_their } car is not counted. A person can have up to $4,000 in other assets,
   such as bank accounts, that are not counted. The assets that are not
   counted are set by law: specifically, 
   [**735 ILCS 5/12-901**](https://www.ilga.gov/legislation/ilcs/fulltext.asp?DocName=073500050K12-1001)
@@ -1561,21 +1560,19 @@ content: |
 id: substantial hardship
 question: |
   % if filing_basis == "filing_self":
-  Will paying court fees be hard for you or your family?
+  Other reasons why paying court fees would be hard for you or your family
   % else:
-  Will paying court fees be hard for ${ users[0].familiar() } or their family?
+  Other reasons why paying court fees would be hard for ${ users[0].familiar() } or their family
   % endif
 subquestion: |
   % if filing_basis == "filing_self":
-  If you want to explain to a judge why you would be harmed if you do not
-  get a fee waiver, you can explain it here. This is optional.
+  If there is additional information you think the judge should know about why you cannot afford to pay the court fees, include that information here. This is optional.
   
   Complete this sentence:
   
   **It would be a substantial hardship for me or my family if I have to pay the fees, costs, and charges because:**
   % else:
-  If you want to explain to the judge why ${ users[0].familiar() } would be 
-  harmed if they do not get a fee waiver, you can explain it here. This is optional.
+  If there is additional information you think the judge should know about why ${ users[0].familiar() } cannot afford to pay the court fees, include that information here. This is optional.
   
   Complete this sentence:
   
@@ -1649,12 +1646,12 @@ question: |
   % endif
 subquestion: |
   % if al_form_type in ['starts_case','existing_case','appeal'] and user_started_case:
-  Answer yes if there is a person or organization ${ you_or_obo_name } ${ are_is } suing or taking to court.
+  Answer **Yes** if there is a person or organization ${ you_or_obo_name } ${ are_is } suing or taking to court.
   % elif al_form_type in ['starts_case','existing_case','appeal']:
   You should be able to find out from the paperwork that told ${ you_or_obo_name } to 
   go to court.
 
-  Answer yes if someone else has sued ${ you_or_obo_name } or is bringing ${ you_or_obo_name } to court.
+  Answer **Yes** if someone else has sued ${ you_or_obo_name } or is bringing ${ you_or_obo_name } to court.
   % endif
 fields:
   - no label: other_parties.there_are_any
@@ -2959,7 +2956,11 @@ review:
     show if: filing_basis != "filing_self"
   - Edit: substantial_hardship_explanation
     button: |
-      **Substantial hardship because**:
+      % if filing_basis != "filing_self":
+      **${ users[0].name_full() } cannot afford to pay court fees because:**
+      % else:
+      **Cannot afford to pay court fees because:**
+      % endif
       ${ substantial_hardship_explanation }
   - Edit: signer[0].name.first
     button: |
@@ -3708,7 +3709,11 @@ review:
     show if: filing_basis != "filing_self"
   - Edit: substantial_hardship_explanation
     button: |
-      **Substantial hardship because**:
+      % if filing_basis != "filing_self":
+      **${ users[0].name_full() } cannot afford to pay court fees because:**
+      % else:
+      **Cannot afford to pay court fees because:**
+      % endif
       ${ substantial_hardship_explanation }
   - Edit: signer[0].name.first
     button: |
